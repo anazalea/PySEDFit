@@ -243,10 +243,10 @@ def DualTree(dataFlux,dDataFlux,modelFlux,modelParams,mcIts):
         
         
         
-modelfile = np.genfromtxt('../salp_tau1_m20.bbsed')
+modelfile = np.genfromtxt('../TestFiles/salp_tau1_m20.bbsed')
 modelFluxes = 10**(modelfile[:,5:]/-2.5)
 modelParams = modelfile[:,:5]
-data = np.genfromtxt('../elliptical.mockobs.cat')
+data = np.genfromtxt('../TestFiles/elliptical.mockobs.cat')
 dataFluxes = 10**(data[:,np.arange(0,len(data[0]),2)]/-2.5)
 dDataFluxes = dataFluxes*data[:,1+np.arange(0,len(data[0]),2)]/1.086
 dataColors = dataFluxes[:,1:]/dataFluxes[:,:-1]
