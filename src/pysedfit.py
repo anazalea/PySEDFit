@@ -169,7 +169,7 @@ def DualTreePercentiles(data,percentiles=[25,50,75]):
     stats = np.percentile(data,percentiles,axis=2)
     return(stats)
 #------------------------------------------------------------------------------  
-def DualTreePeakProbs(data,flagMultimodal=False): 
+def DualTreePeakProbs(data,flagMultimodal=False,saveBBlocks=False): 
     '''
     Creates a Bayesian blocks histogram of the set of values found for each parameter
     for each object. The peak probability value is taken to be the centre of the block
@@ -181,12 +181,17 @@ def DualTreePeakProbs(data,flagMultimodal=False):
     '''
     allPeakLocs = [] #for all objects
     multimo = []
+    bBlocks = []
     for i in range(len(data)):
         peakLocs = [] #for this object, each parameter
         myMultimo = []
+        myBBlocks = []
         for j in range(len(data[0][0])):
             bins = bayesian_blocks(data[i][:,j],fitness='events',p0=0.05)
             histo = np.histogram(data[i][:,j],bins)
+            # Optional Bayesian Block Histogram storage
+            if saveBBlocks:
+                myBBlocks.append([bins,histo])
             nMax = np.argmax(histo[0])
             loc = (histo[1][nMax]+histo[1][nMax+1])/2.
             peakLocs.append(loc)
@@ -201,6 +206,8 @@ def DualTreePeakProbs(data,flagMultimodal=False):
                     myMultimo.append(False)
         if flagMultimodal:
             multimo.append(myMultimo)
+        if saveBBlocks:
+            bBlocks.append(myBBlocks)
         allPeakLocs.append(peakLocs)
     if flagMultimodal:
         return(np.array([allPeakLocs,multimo]))
@@ -240,13 +247,43 @@ def DualTree(dataFlux,dDataFlux,modelFlux,modelParams,mcIts):
 ###############################################################################
 ###############################################################################
 ###############################################################################
+'''
+Upper Limits
+''' 
+
+def DualTreeWithUpperLimits(dataFlux,dDataFlux,modelFlux,modelParams,mcIts,upperLimFlagVal,upperLimProb):
+    '''
+    Inputs:
+            dataFlux = observed fluxes, array of size (#objects,#filters)
+            dDataFlux = flux uncertainties, array of size (#objects,#filters)
+            modelFlux = fluxes of models, array of size (#models,#filters)
+            modelParams = parameters of each model to be recorded, array of size (#models,#parameters)
+            mcIts = number of times to perturb fluxes for each object, int
+            upperLimFlagVal = where dDataFlux == this value, corresponding elements of dataFlux will br treated as upper limits
+            upperLimProb = the probability that upper
+            
+    Output:
+            NumPy array of size (#objects,mcIts,#params)
+            e.g. the zeroth element gives you a 2d array where each row represents the
+            fit parameters from one monte carlo iteration 
+    '''
+        
+###############################################################################
+###############################################################################
+###############################################################################
+'''
+MPI
+'''
+###############################################################################
+###############################################################################
+###############################################################################
+
         
         
-        
-modelfile = np.genfromtxt('../salp_tau1_m20.bbsed')
+modelfile = np.genfromtxt('../../TestFiles/salp_tau1_m20.bbsed')
 modelFluxes = 10**(modelfile[:,5:]/-2.5)
 modelParams = modelfile[:,:5]
-data = np.genfromtxt('../elliptical.mockobs.cat')
+data = np.genfromtxt('../../TestFiles/elliptical.mockobs.cat')
 dataFluxes = 10**(data[:,np.arange(0,len(data[0]),2)]/-2.5)
 dDataFluxes = dataFluxes*data[:,1+np.arange(0,len(data[0]),2)]/1.086
 dataColors = dataFluxes[:,1:]/dataFluxes[:,:-1]
