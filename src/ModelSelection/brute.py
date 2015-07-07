@@ -76,7 +76,7 @@ def BruteColorSpace(dataFluxes,dDataFluxes,modelFluxes):
         results = np.r_[results,[[n,s,minChi2]]]
     return(results)
     
-#------------------------------------------------------------------------------     
+#-------------------------------------------------------------------------------     
 def BruteFluxSpace(dataFluxes,dDataFluxes,modelFluxes):
     '''
     Compare objects' observed fluxes and associated uncertainties in N filters to model 
