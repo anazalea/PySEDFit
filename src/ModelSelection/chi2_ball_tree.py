@@ -31,7 +31,7 @@ from scipy.spatial.distance import seuclidean
 from sklearn.neighbors import NearestNeighbors as nn
 from sklearn.neighbors import BallTree
 
-#------------------------------------------------------------------------------ 
+#------------------------------------------------------------------------------- 
 def ChiTreeColor(dataFlux,dDataFlux,modelFlux):
     '''
     Finds the model that minimizes chi^2 distance for each object in color space 
