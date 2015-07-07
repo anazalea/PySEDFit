@@ -100,6 +100,7 @@ def BruteFluxSpace(dataFluxes,dDataFluxes,modelFluxes):
         results = np.r_[results,[[n,scales[int(n)],minChi2]]]
     return(results)
 #------------------------------------------------------------------------------ 
+
     
     
     
