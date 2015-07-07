@@ -27,7 +27,7 @@ import sys
 import math
 import numpy as np
 
-#------------------------------------------------------------------------------   
+#-------------------------------------------------------------------------------   
 def Scale(modelFlux,dataFlux,dDataFlux):
     '''
     Calculate scale factor of best fit according to Sawicki (2012) A5 
