@@ -115,3 +115,15 @@ def DualTreePeakProbs(data,flagMultimodal=False,saveBBlocks=False):
     else:
         return(np.array(allPeakLocs))
 #------------------------------------------------------------------------------ 
+def DualTreePercentiles(data,percentiles=[25,50,75]):
+    '''
+    Input:
+        DualTree array
+    Output:
+        Numpy array of size (#percentiles,#objects,#parameters)
+        e.g. stats[0] gives the value of the zeroth parameter at the zeroth percentile
+        for each object
+    '''
+    stats = np.percentile(data,percentiles,axis=2)
+    return(stats)
+#------------------------------------------------------------------------------    
