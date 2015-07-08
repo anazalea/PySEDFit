@@ -50,14 +50,14 @@ def ChiTreeColor(dataFlux,dDataFlux,modelFlux):
     modelColors = modelFlux[:,1:] / modelFlux[:,:-1]
     dataColors = dataFlux[:,1:]/dataFlux[:,:-1]
     dDataColors = np.sqrt( (1./dataFlux[:,:-1])**2 * (dDataFlux[:,1:])**2 \
-                + (dataFluxes[:,1:]/dataFlux[:,:-1]**2)**2 * (dDataFlux[:,:-1])**2)
+                + (dataFlux[:,1:]/dataFlux[:,:-1]**2)**2 * (dDataFlux[:,:-1])**2)
     results = np.array([]).reshape(0,3)
     for i in range(len(dataFlux)):
         tree = nn(n_neighbors=1,algorithm='ball_tree',metric='seuclidean',metric_params={'V':dDataColors[i]**2})
         tree.fit(modelColors)
         query = tree.kneighbors(dataColors[i],1)
         n,chi2 = query[1][0][0],query[0][0][0]**2.
-        s = Scale(modelFlux[n],dataFlux[i],dDataFlux[i])
+        s = fit_tools.Scale(modelFlux[n],dataFlux[i],dDataFlux[i])
         results = np.r_[results,[[n,s,chi2]]]
     return(results)
 #------------------------------------------------------------------------------ 
