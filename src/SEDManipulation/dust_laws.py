@@ -70,6 +70,7 @@ def Calzetti1997(lam,lnu,ebv):
 #------------------------------------------------------------------------------ 
 def Fitzpatrick(lamInv,c1,c2,c3,c4,lambda0inv,gamma,ebv):
     '''
+    Calculate tau values for one of the dust laws in the Fitzpatrick 1986 family
     Inputs:
             lamInv = NumPy array of wavelengths in microns^-1
             c1,c2,c3,c4 = Fitzpatricky constants (floats)
@@ -78,7 +79,7 @@ def Fitzpatrick(lamInv,c1,c2,c3,c4,lambda0inv,gamma,ebv):
             ebv = E(B-V) a float in the range(0.,1.)
             
     Output:
-            NumPy array of taus
+            NumPy array of exp(-1.*tau)
     '''   
     c4v = np.zeros(len(laminv))
     c4v[laminv>=5.9] = c4
@@ -87,7 +88,7 @@ def Fitzpatrick(lamInv,c1,c2,c3,c4,lambda0inv,gamma,ebv):
                 c4v * (0.593*(lamInv-5.9)**2 + 0.0564*(lamInv-5.9)**3)
     avOverEbv = 3.1 # Assumes R(V)=A(V)/E(B-V)=3.1
     tau = (elvOverEbv + avOverEbv) * ebv/1.086
-    return(tau)
+    return(np.exp(-1.*tau))
 #------------------------------------------------------------------------------
 def LMC(lam,lnu,ebv):
     '''
@@ -131,6 +132,33 @@ def Dor30(lam,lnu,ebv):
     lambda0inv = 4.606
     gamma = 0.894
     return(lam*Fitzpatrick(1./lam,c1,c2,c3,c4,lambda0inv,gamma,ebv))
+#------------------------------------------------------------------------------ 
+def SMC(lam,lnu,ebv):
+    '''
+    Apply the Prevot et al 1984 SMC law
+    Inputs:
+            lam = NumPy array of wavelengths in microns
+            lnu = Numpy array of spectrum L_nu 
+            ebv = E(B-V) a float in the range(0.,1.)
+    Output:
+            NumPy array of dust attenuated lnus
+    '''   
+    lambdaInvPrevot = np.array([7.84, 7.52, 7.23, 6.98, 6.72,6.48, 6.27, 6.07, 5.88, \
+    5.70, 5.52, 5.38, 5.24, 5.00, 4.73,4.50, 4.28, 4.09, 3.92, 3.75, 3.60, 3.46, \
+    3.34, 3.22, 2.70,2.35, 1.89, 0])
+    
+    elvOverEbvPrevot = np.array([13.54, 12.52, 11.51, 10.80, 9.84, 9.28,9.06, 8.49, \
+    8.01, 7.71, 7.17, 6.90, 6.76, 6.38, 5.85, 5.30,4.53, 4.24, 3.91, 3.49, 3.15, \
+    3.00, 2.65, 2.29, 1.67, 1.00,0.00, 0.00])
+    
+    elvOverEbv = np.interp(1./lam,lambdaInvPrevot,elvOverEbvPrevot)
+    avOverEbv = 3.1 # Assumes R(V)=A(V)/E(B-V)=3.1
+    tau = (elvOverEbv + avOverEbv) * ebv/1.086
+    return(lnu*np.exp(-1.*tau))
+#------------------------------------------------------------------------------ 
+    
+    
+    
     
 
 
