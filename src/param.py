@@ -19,7 +19,7 @@ fitsedOptParams = {"fitting_method" : "brute",
 
 fitsedMandParams = {"model_file" : "",
                     "model_mag_columns" : [0,],
-                    "output_name" : "",
+                    "output_file" : "",
                     "data_file" : "",
                     "data_mag_columns" : [0,],
                     "data_error_columns" : [0,]}
@@ -39,9 +39,9 @@ def SetParams(pfile, mode="fitsed", args=None):
         Dictionary containing parameter values.
     """
     #FIXME: add individual param value checks (i.e. must be positive integer)
-    if mode == "sedfit":
-        optDict = deepcopy(sedfitOptParams)
-        mandDict = deepcopy(sedfitMandParams)
+    if mode == "fitsed":
+        optDict = deepcopy(fitsedOptParams)
+        mandDict = deepcopy(fitsedMandParams)
     else:
         string = "AHHH I don't understand the mode!"
         raise ValueError(string)
