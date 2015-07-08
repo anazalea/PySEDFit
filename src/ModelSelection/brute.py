@@ -29,6 +29,7 @@ sys.path.append('.')
 import math
 import numpy as np
 import fit_tools 
+import os
 
 #------------------------------------------------------------------------------
 def MinChi2(models,data,weights,returnAll=False):
@@ -135,6 +136,52 @@ def BruteFitErrorBars(dataFluxes,dDataFluxes,modelFluxes,modelParams,dChi2):
     return(results)
 #------------------------------------------------------------------------------ 
 
+def BruteFit(params,dataFlux,dDataFlux,dataParams,dataParamInfo,modelFlux,modelParams,modelParamInfo,dchi2=None):
+    # params to add BruteSpace: color/flux
+    #               BruteDChi2Error: dchi2 val         
+    
+    if dchi2==None:
+        if params['brute_space']=='color':
+            fit = BruteColorSpace(dataFlux,dDataFlux,modelFlux)
+        else:
+            fit = BruteFluxSpace(dataFlux,dDataFlux,modelFlux)
+        outModelParams = modelParams[fit[:,0].astype(int)]
+        modelParamNames = modelParamInfo[:,1]
+        modelParamFluxScale = modelParamInfo[:,3]
+
+        
+        # this is ugly, but my brain isn't indexing well
+        scaleUs = np.arange(len(modelParamNames))[modelParamFluxScale>0]
+        
+        scaleUs = [scaleUs]
+        print(scaleUs)
+        for n in scaleUs:
+            outModelParams[:,n]*=fit[:,1]
+            
+        outStuff = np.c_[dataParams,outModelParams,fit[:,2]]
+        head = ''
+        fmt = ''
+        i=0
+        for p in dataParamInfo:
+            head+=str(i)+' '+p[1]+'\n'
+            fmt+=p[2]+' '
+            i+=1
+        for p in modelParamInfo:
+            head+=str(i)+' '+p[1]+'\n'
+            fmt+=p[2]+' '
+            i+=1
+        head+=str(i+1)+' min(chi2)'
+        fmt+='%f'
+        np.savetxt(params['output_file'],outStuff,header=head,fmt=fmt)
+        os.system('say "I work! I work!"')
+        return()
+        
+        
+        
+    elif params[brute_space]=='flux' and params[brute_dchi2]!=None:
+        fit = BruteColorSpace(dataFlux,dDataFlux,modelFlux)
+        
+        
     
     
     
