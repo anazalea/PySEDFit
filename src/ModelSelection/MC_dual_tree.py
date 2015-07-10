@@ -30,6 +30,7 @@ import fit_tools
 from scipy.spatial.distance import seuclidean
 from sklearn.neighbors import NearestNeighbors as nn
 from sklearn.neighbors import BallTree
+from astroML.density_estimation import bayesian_blocks
 
 '''
 Dual Tree, MC
