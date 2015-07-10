@@ -19,7 +19,11 @@ fitsedOptParams = {"fitting_method" : "brute",
                    "mag_softening" : 0.03}
 
 fitsedMandParams = {"model_file" : "",
+<<<<<<< HEAD:param.py
                     "model_flux_columns" : [0,],
+=======
+                    "model_mag_columns" : [0,],
+>>>>>>> origin/master:src/param.py
                     "output_file" : "",
                     "data_file" : "",
                     "data_flux_columns" : [0,],
@@ -39,7 +43,11 @@ def SetParams(pfile, mode="fitsed", args=None):
     Outputs:
         Dictionary containing parameter values.
     """
+<<<<<<< HEAD:param.py
     #FIXME: add individual param value checks (i.e. spaces in file names)
+=======
+    #FIXME: add individual param value checks (i.e. must be positive integer)
+>>>>>>> origin/master:src/param.py
     if mode == "fitsed":
         optDict = deepcopy(fitsedOptParams)
         mandDict = deepcopy(fitsedMandParams)

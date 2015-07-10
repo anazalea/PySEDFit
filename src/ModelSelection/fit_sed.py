@@ -38,6 +38,8 @@ def main(params):
     '''
     print("PySEDFit v0.1\nBlahBlah\nBlah.")
     os.system('say "Welcome to pie sedfit"')
+    os.system(" say 'murder murder murder. kill kill kill'")
+    os.system(" say 'its the rolls royce of wheelchairs'")
     
     
     #---------------------------------------------------------------------------
