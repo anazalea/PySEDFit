@@ -111,8 +111,12 @@ def DualTreePeakProbs(data,flagMultimodal=False,saveBBlocks=False):
         if saveBBlocks:
             bBlocks.append(myBBlocks)
         allPeakLocs.append(peakLocs)
-    if flagMultimodal:
+    if flagMultimodal and not saveBBlocks:
         return(np.array([allPeakLocs,multimo]))
+    if not flagMultimodal and saveBBlocks:
+        return(np.array([allPeakLocs,bBlocks]))
+    if flagMultimodal and saveBBlocks:
+        return(np.array([allPeakLocs,multimo,bBlocks]))
     else:
         return(np.array(allPeakLocs))
 #------------------------------------------------------------------------------ 
