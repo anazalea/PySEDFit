@@ -68,7 +68,7 @@ def DualTree(dataFlux,dDataFlux,modelFlux,modelParams,mcIts,columnsToScale=[]):
         myParams = s
         for j in range(len(modelParams[0])):
             if j in columnsToScale:
-                myParams = np.c_[myParams,s*modelParams[query[1][:,0]][:,j]]                
+                myParams = np.c_[myParams,np.multiply(s,modelParams[query[1][:,0]][:,j])]                
             else:
                 myParams = np.c_[myParams,modelParams[query[1][:,0]][:,j]]
         fitParams.append(myParams)
@@ -94,7 +94,7 @@ def DualTreePeakProbs(data,flagMultimodal=False,saveBBlocks=False):
         myBBlocks = []
         for j in range(len(data[0][0])):
             
-            bins = bayesian_blocks(data[i][:,j],fitness='events',p0=0.05)
+            bins = bayesian_blocks(data[i][:,j],fitness='events',p0=0.5)
             histo = np.histogram(data[i][:,j],bins)
             # Optional Bayesian Block Histogram storage
             if saveBBlocks:
@@ -121,11 +121,11 @@ def DualTreePeakProbs(data,flagMultimodal=False,saveBBlocks=False):
             bBlocks.append(myBBlocks)
         allPeakLocs.append(peakLocs)
     if flagMultimodal and not saveBBlocks:
-        return(np.array([allPeakLocs,multimo]))
+        return([allPeakLocs,multimo])
     if not flagMultimodal and saveBBlocks:
-        return(np.array([allPeakLocs,bBlocks]))
+        return([allPeakLocs,bBlocks])
     if flagMultimodal and saveBBlocks:
-        return(np.array([allPeakLocs,multimo,bBlocks]))
+        return([allPeakLocs,multimo,bBlocks])
     else:
         return(np.array(allPeakLocs))
 #------------------------------------------------------------------------------ 
