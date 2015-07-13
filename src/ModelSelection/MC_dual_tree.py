@@ -42,7 +42,7 @@ model to each (euclidean dist.) Return sampled PDF of each model parameter
 '''
 
 #------------------------------------------------------------------------------ 
-def DualTree(dataFlux,dDataFlux,modelFlux,modelParams,mcIts):
+def DualTree(dataFlux,dDataFlux,modelFlux,modelParams,mcIts,columnsToScale=[]):
     '''
     Inputs:
             dataFlux = observed fluxes, array of size (#objects,#filters)
@@ -50,6 +50,7 @@ def DualTree(dataFlux,dDataFlux,modelFlux,modelParams,mcIts):
             modelFlux = fluxes of models, array of size (#models,#filters)
             modelParams = parameters of each model to be recorded, array of size (#models,#parameters)
             mcIts = number of times to perturb fluxes for each object, int
+            columnsToScale = list of column indices in modelParams of parameters that need to be multiplied by scale factor
             
     Output:
             NumPy array of size (#objects,mcIts,#params)
@@ -66,7 +67,10 @@ def DualTree(dataFlux,dDataFlux,modelFlux,modelParams,mcIts):
         s = fit_tools.Scale(modelFlux[query[1][:,0]],newFlux,np.ones(np.shape(newFlux)))
         myParams = s
         for j in range(len(modelParams[0])):
-            myParams = np.c_[myParams,modelParams[query[1][:,0]][:,j]]
+            if j in columnsToScale:
+                myParams = np.c_[myParams,s*modelParams[query[1][:,0]][:,j]]                
+            else:
+                myParams = np.c_[myParams,modelParams[query[1][:,0]][:,j]]
         fitParams.append(myParams)
     return(np.array(fitParams))
 #------------------------------------------------------------------------------ 
@@ -89,12 +93,17 @@ def DualTreePeakProbs(data,flagMultimodal=False,saveBBlocks=False):
         myMultimo = []
         myBBlocks = []
         for j in range(len(data[0][0])):
+            
             bins = bayesian_blocks(data[i][:,j],fitness='events',p0=0.05)
             histo = np.histogram(data[i][:,j],bins)
             # Optional Bayesian Block Histogram storage
             if saveBBlocks:
                 myBBlocks.append([bins,histo])
-            nMax = np.argmax(histo[0])
+            try:
+                nMax = np.argmax(histo[0])
+            except:
+                print(i,j)
+                return(histo)
             loc = (histo[1][nMax]+histo[1][nMax+1])/2.
             peakLocs.append(loc)
             # Optional check for possible multimodality. Not remotely rigorous, but I haven't seen it fail yet
