@@ -108,6 +108,40 @@ def DualTree(dataFlux,dDataFlux,modelFlux,modelParams,mcIts,columnsToScale=[]):
         fitParams.append(myParams)
     return(np.array(fitParams))
 #------------------------------------------------------------------------------ 
+def DaisyChainDualTree(dataFlux,dDataFlux,modelFlux,modelParams,mcIts,columnsToScale=[]):
+    '''
+    Inputs:
+            dataFlux = observed fluxes, array of size (#objects,#filters)
+            dDataFlux = flux uncertainties, array of size (#objects,#filters)
+            modelFlux = fluxes of models, array of size (#models,#filters)
+            modelParams = parameters of each model to be recorded, array of size (#models,#parameters)
+            mcIts = number of times to perturb fluxes for each object, int
+            columnsToScale = list of column indices in modelParams of parameters that need to be multiplied by scale factor
+            
+    Output:
+            NumPy array of size (#objects,mcIts,#params)
+            e.g. the zeroth element gives you a 2d array where each row represents the
+            fit parameters from one monte carlo iteration 
+    '''
+    modelColors = modelFlux[:,1:] / modelFlux[:,:-1]
+    modelColors = np.c_[modelColors,modelFlux[:,0]/modelFlux[:,-1]]
+    tree = BallTree(modelColors)
+    fitParams = []
+    for i in range(len(dataFlux)):
+        newFlux = dataFlux[i] + dDataFlux[i] * np.random.randn(mcIts,len(dataFlux[i]))
+        newColors = newFlux[:,1:] / newFlux[:,:-1]
+        newColors = np.c_[newColors,newFlux[:,0]/newFlux[:,-1]]
+        query = tree.query(newColors,k=1,dualtree=True)
+        s = fit_tools.Scale(modelFlux[query[1][:,0]],newFlux,np.ones(np.shape(newFlux)))
+        myParams = s
+        for j in range(len(modelParams[0])):
+            if j in columnsToScale:
+                myParams = np.c_[myParams,np.multiply(s,modelParams[query[1][:,0]][:,j])]                
+            else:
+                myParams = np.c_[myParams,modelParams[query[1][:,0]][:,j]]
+        fitParams.append(myParams)
+    return(np.array(fitParams))
+#------------------------------------------------------------------------------ 
         
 def DualTreePeakProbs(data,flagMultimodal=False,saveBBlocks=False): 
     '''
@@ -128,7 +162,7 @@ def DualTreePeakProbs(data,flagMultimodal=False,saveBBlocks=False):
         myBBlocks = []
         for j in range(len(data[0][0])):
             
-            bins = bayesian_blocks(data[i][:,j],fitness='events',p0=0.5)
+            bins = bayesian_blocks(data[i][:,j],fitness='events',p0=0.05)
             histo = np.histogram(data[i][:,j],bins)
             # Optional Bayesian Block Histogram storage
             if saveBBlocks:
