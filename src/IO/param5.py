@@ -173,8 +173,9 @@ def CompatabilityHandler(keyList, valueList):
             valueList[i] = valueList[i].replace("fraction", "montecarlo")
             temp = valueList[i].split()
             valueList[i] = temp[0]
-            keyList.append("errorbar_range")
-            valueList.append(temp[1])
+            if len(temp) > 1:
+                keyList.append("errorbar_range")
+                valueList.append(temp[1])
             if len(temp) > 2:
                 keyList.append("montecarlo_iters")
                 valueList.append(temp[2])

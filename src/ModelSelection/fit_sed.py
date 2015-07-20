@@ -30,7 +30,7 @@ sys.path.append('../../')
 sys.path.append('../IO/')
 import math
 import numpy as np
-import param3
+import param5
 
 def main(params):
     '''
@@ -39,7 +39,6 @@ def main(params):
     print("PySEDFit v0.1\nBlahBlah\nBlah.")
     os.system('say "Welcome to pie sedfit"')
     os.system(" say 'murder murder murder. kill kill kill'")
-    os.system(" say 'its the rolls royce of wheelchairs'")
     
     
     #---------------------------------------------------------------------------
@@ -89,13 +88,14 @@ def main(params):
     if params['fitting_method']=='brute':
         import brute
         brute.BruteFit(params,dataFlux,dDataFlux,dataParams,dataParamInfo,modelFlux,modelParams,modelParamInfo)
-            
+      
+    
         
 if __name__ == "__main__":
     
     pfile = sys.argv[1]
     args = sys.argv[2:]
-    params = param3.SetParams(pfile,args)
+    params = param5.SetParams(pfile,args)
     main(params)
 
 

@@ -206,6 +206,6 @@ def DualTreePercentiles(data,percentiles=[25,50,75]):
         e.g. stats[0] gives the value of the zeroth parameter at the zeroth percentile
         for each object
     '''
-    stats = np.percentile(data,percentiles,axis=2)
+    stats = np.percentile(data,percentiles,axis=1)
     return(stats)
 #------------------------------------------------------------------------------    

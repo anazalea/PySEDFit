@@ -29,7 +29,7 @@ import os
 
 class Filter:
     '''
-    
+    A filter.
     '''
     def __init__(self,ftcFile,unit):
         # Validate unit 
@@ -70,26 +70,21 @@ class Filter:
         # Find the part of the spectrum where the FTC is defined
         startN,stopN = np.searchsorted(specNu.value,[self.ftcNu[0].value,self.ftcNu[-1].value])     
         nus = specNu[startN-1:stopN+1]
-        
         # Resample Filter 
         newFtc = np.interp(nus,self.ftcNu.value,self.ftcTransNu)
-        
         # Define functions to integrate
         num = interp1d(nus,newFtc * specFnu[startN-1:stopN+1])
         denom = interp1d(nus,newFtc)
-        
         # Integrate
         numerator = quad(num,self.ftcNu[0].value,0.999*self.ftcNu[-1].value)
         denominator = quad(denom,self.ftcNu[0].value,0.999*self.ftcNu[-1].value)
-        
         ABmag = -2.5 * np.log10(numerator[0]/denominator[0]) - 48.60
         return(ABmag)
         
-    
     def plotFilt(self):
         pass
 
-os.system('whoami > name.txt')
+os.system('whoami > namedsflsdfjhdsfjkhdsfjkhdsfjka.txt')
 f=open('namedsflsdfjhdsfjkhdsfjkhdsfjka.txt','r')
 name=f.readline()
 os.system('rm namedsflsdfjhdsfjkhdsfjkhdsfjka.txt')
