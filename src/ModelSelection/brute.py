@@ -53,6 +53,33 @@ def MinChi2(models,data,weights,returnAll=False):
     return(np.array([minChi2,n]))
     
 #------------------------------------------------------------------------------   
+def BruteDaisyChain(dataFluxes,dDataFluxes,modelFluxes):
+    '''
+    Inputs:
+            dataFlux = observed fluxes, array of size (#objects,#filters)
+            dDataFlux = flux uncertainties, array of size (#objects,#filters)
+            modelFlux = fluxes of models, array of size (#models,#filters)
+            
+    Output:
+            NumPy array of size (#objects,3)
+            Columns [index of model with min chi^2, scale factor, chi^2 value]
+    '''
+    modelColors = modelFluxes[:,1:] / modelFluxes[:,:-1]
+    modelColors = np.c_[modelColors,modelFluxes[:,0]/modelFluxes[:,-1]]
+    
+    dataColors = dataFluxes[:,1:]/dataFluxes[:,:-1]
+    dataColors = np.c_[dataColors,dataFluxes[:,0]/dataFluxes[:,-1]]
+    dDataColors = np.sqrt( (1./dataFluxes[:,:-1])**2 * (dDataFluxes[:,1:])**2 \
+                + (dataFluxes[:,1:]/dataFluxes[:,:-1]**2)**2 * (dDataFluxes[:,:-1])**2)
+    dDataColors = np.c_[dDataColors,np.sqrt( (1./dataFluxes[:,0])**2 * (dDataFluxes[:,-1])**2 \
+                + (dataFluxes[:,-1]/dataFluxes[:,0]**2)**2 * (dDataFluxes[:,0])**2)]
+    results = np.array([]).reshape(0,3)
+    for i in range(len(dataFluxes)):
+        minChi2,n = MinChi2(modelColors,dataColors[i],dDataColors[i])
+        s = fit_tools.Scale(modelFluxes[int(n)],dataFluxes[i],dDataFluxes[i])
+        results = np.r_[results,[[n,s,minChi2]]]
+    return(results)
+#------------------------------------------------------------------------------    
 def BruteColorSpace(dataFluxes,dDataFluxes,modelFluxes):
     '''
     Compare objects' observed colors and propagated uncertainties in N filters to model 
