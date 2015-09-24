@@ -46,7 +46,7 @@ class Filter:
         if unitType == 'length':
             self.ftcLambda, self.ftcTransLam = np.loadtxt(ftcFile,unpack=True)
             self.ftcLambda = self.ftcLambda * u.Unit(unit)
-            self.ftcLambda = self.ftcLambda.to(u.AA)
+            self.ftcLambda = self.ftcLambda.to(u.micron)
             self.ftcNu = const.c / self.ftcLambda
             self.ftcNu = self.ftcNu.to(u.Hz)
             self.ftcNu = self.ftcNu[::-1]
