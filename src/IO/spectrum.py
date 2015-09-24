@@ -28,18 +28,29 @@ import os
 
 
 class Spectrum:
-    def __init__(self,specFile,xUnit,yUnit):
-        # Validate units 
+    def __init__(self,specFile,xUnit,yUnit,columns=[0,1]):
+        # check file
+        try:
+            f = np.genfromtxt(specfile)
+        except:
+            raise ValueError(specFile,' could not be read.')
+        
+        # check wavelength units
         try:
             xUnitType = u.get_physical_type(x.Unit(unit))
         except:
-            os.system("say '"+xUnit+" is not a recognized unit. Don't waste my time "+name+"'")
             raise TypeError(xUnit," is not a recognized unit. Don't waste my time.")
         if xUnitType not in ['length','frequency']:
-            os.system("say '"+xUnit+" is neither a unit of frequency nor a unit of length. Get it together "+str(name)+"'")
             raise TypeError(xUnit,' is neither a unit of frequency nor a unit of length. Get it together.')
         
-        # How to check flux units?
+        # check flux density units
+        okFluxUnits = ['Lsun/A']
+        if yUnit not in okFluxUnits:
+            raise TypeError(yUnit,' is not an accepted unit of flux density.')
+
+        if xUnitType == 'length':    
+            self.wavelengths = f[:,0]*u.Unit(xUnit)
+            self.wavelengths = self.wavelengths.to('micron')
             
         
 
