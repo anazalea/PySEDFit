@@ -380,7 +380,9 @@ def formatConversion(x):
 
 #########################################################################
 #FIXME: move to main module???
-fitsedParams = [Param("fitting_method", defaultValue="brute", 
+def init_params():
+
+    fitsedParams = [Param("fitting_method", defaultValue="brute", 
                       allowedValues=["brute", "tree"]),
                 Param("model_flux_unit", defaultValue="mag",
                       allowedValues=["mag", "jansky"]),
@@ -438,7 +440,7 @@ fitsedParams = [Param("fitting_method", defaultValue="brute",
                 Param("yourname",defaultValue="playa")
                       ]
 
-makesedParams = [Param("model_file", mandatory=True, canHaveSpace=False),
+    makesedParams = [Param("model_file", mandatory=True, canHaveSpace=False),
                  Param("filter_names", mandatory=True, isList=True, 
                        multipleKey=True, flattenList=True),
                  Param("extinction_law", defaultValue="none",
@@ -451,5 +453,6 @@ makesedParams = [Param("model_file", mandatory=True, canHaveSpace=False),
                  Param("output_file", mandatory=True, canHaveSpace=False),
                  Param("output_dir", defaultValue=os.getcwd()),
                  Param("output_overwrite", defaultValue=False, dataType=bool)]
-#Param("model_columns", defaultValue=["all"], isList=True,
+    #Param("model_columns", defaultValue=["all"], isList=True,
                  #      dataType=[str, int]),
+    return fitsedParams,makesedParams
