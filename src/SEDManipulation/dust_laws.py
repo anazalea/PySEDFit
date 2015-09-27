@@ -25,9 +25,36 @@ from __future__ import division
 
 import sys
 sys.path.append('.')
+sys.path.append('../IO/')
 import math
 import numpy as np
+import spectrum
+from astropy import units as u
 
+def dustReddenSpectrum(spec,dustlaw,ebv):
+    '''
+    Apply dust reddening to rest frame galaxy spectrum
+    
+    Inputs:
+        spec = spectrum object
+        dustlaw = string, one of ['Calzetti2000','Calzetti1997','LMC','SMC','MW','Dor30']
+        ebv = float in (0,1)
+    Ouput:
+        Astropy quantity of reddened spectrum of length len(spec.spec), with units of spec.spec
+    '''
+    #assert isinstance(spec,spectrum.Spectrum)
+    assert isinstance(ebv,float)
+    dustLaws = ['Calzetti2000','Calzetti1997','LMC','SMC','MW','Dor30']
+    dustLawFuncs = [Calzetti2000,Calzetti1997,LMC,SMC,MW,Dor30]
+    if dustlaw not in dustLaws:
+        raise ValueError(dustlaw,' is not a valid dust law.')
+    if np.any(np.asarray(ebv)>=1.0):
+        raise ValueError('Values of E(B-V) must be between 0 and 1.')
+    nDustLaw = dustLaws.index(dustlaw)
+    specUnit = spec.spec.unit
+    reddenedSpec = dustLawFuncs[nDustLaw](spec.wavelengths.to('micron').value,spec.spec.value,ebv) * u.Unit(specUnit)
+    return(reddenedSpec)
+    
 #------------------------------------------------------------------------------ 
 def Calzetti2000(lam,lnu,ebv):
     '''

@@ -25,7 +25,7 @@ from scipy.integrate import quad
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 import os
-from Filter import Filter 
+from filterv2 import Filter 
 
 
 class Spectrum:
@@ -55,7 +55,7 @@ class Spectrum:
         wavelengths = wavelengths * xUnit
         wavelengths.to('micron',equivalencies=u.spectral())
         if not np.all(np.ediff1d(wavelengths)>0.):
-            if u.get_phyiscal_type(xUnit) == 'frequency':
+            if u.get_physical_type(xUnit) == 'frequency':
                 raise ValueError('Frequencies must be monotonically decreasing.')
             else:
                 raise ValueError('Wavelengths must be monotonically increasing.')
@@ -75,8 +75,11 @@ class Spectrum:
         # Need F_nu, but if there's no area, need to add because too lazy to add equivalency 
         if yUnit.is_equivalent(uFnu):
             spec = spec * yUnit / u.Unit('m')**2
-        if yUnit.is_equivalent(uFlam):
+        elif yUnit.is_equivalent(uFlam):
             spec = spec * yUnit/ u.Unit('m')**2
+        else:
+            spec = spec * yUnit
+        
         if not spec.unit.is_equivalent(uFlamN) and not spec.unit.is_equivalent(uFnuN):
             raise ValueError(spec.unit,' not recognized as a unit of spectral flux density.')
         spec = spec.to(uFnuN,equivalencies=u.spectral_density(wavelengths))
@@ -95,31 +98,25 @@ class Spectrum:
         if not isinstance(filt,Filter):
             raise TypeError('The "filter" you specified is invalid.')
         # Find the part of the spectrum where the FTC is defined
-        startN,stopN = np.searchsorted(self.wavelengths.value,[filt.ftcLambda[0].value,filt.ftcLambda[-1].value])            
-        nus = self.wavelengths[startN-1:stopN+1] # this will break for filters at ends
+        startN,stopN = np.searchsorted(self.wavelengths.value,[filt.wavelengths[0].value,filt.wavelengths[-1].value])            
+        if startN!=0:
+            startN-=1
+        if stopN!=(len(self.wavelengths)-1):
+            stopN+=1
+        print(startN,stopN)
+        ls = self.wavelengths[startN:stopN].value
         # Resample filter
-        newFtc = np.interp(nus,filt.ftcNu.value,filt.ftcTransNu)
-        num = interp1d(nus,newFtc * specFnu[startN-1:stopN+1])
-        denom = interp1d(nus,newFtc)
-         
-         
-                def convolve(self,specNu,specFnu):
-        '''
-        Convolves filter with a spectrum, returns AB mag
-        '''
-        # Find the part of the spectrum where the FTC is defined
-        startN,stopN = np.searchsorted(specNu.value,[self.ftcNu[0].value,self.ftcNu[-1].value])     
-        nus = specNu[startN-1:stopN+1]
-        # Resample Filter 
-        newFtc = np.interp(nus,self.ftcNu.value,self.ftcTransNu)
-        # Define functions to integrate
-        num = interp1d(nus,newFtc * specFnu[startN-1:stopN+1])
-        denom = interp1d(nus,newFtc)
+        newFtc = np.interp(ls,filt.wavelengths.value,filt.ftc)
+        num = interp1d(ls,newFtc * self.spec[startN:stopN])
+        denom = interp1d(ls,newFtc)
         # Integrate
-        numerator = quad(num,filt.ftcNu[0].value,0.999*filt.ftcNu[-1].value)
-        denominator = quad(denom,filt.ftcNu[0].value,0.999*filt.ftcNu[-1].value)
+        numerator = quad(num,filt.wavelengths[0].value,0.999*filt.wavelengths[-1].value)
+        denominator = quad(denom,filt.wavelengths[0].value,0.999*filt.wavelengths[-1].value)
         ABmag = -2.5 * np.log10(numerator[0]/denominator[0]) - 48.60
         return(ABmag)
+         
+         
+
         
         
 

@@ -37,8 +37,6 @@ def main(params):
     Given a param dictionary parsed by param.SetParams, carry out specified model selection procedure
     '''
     print("PySEDFit v0.1\nBlahBlah\nBlah.")
-    os.system('say "Welcome to pie sedfit"')
-    os.system(" say 'murder murder murder. kill kill kill'")
     
     
     #---------------------------------------------------------------------------
