@@ -25,16 +25,16 @@ from scipy.integrate import quad
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 import os
-from filterv2 import Filter 
+import filterv2
 
-
+#------------------------------------------------------------------------------
 class Spectrum:
     '''
     Spectrum with wavelength and associated spectral flux densities, stored in
     units of microns and erg/s/cm^2/Hz for ease of use with SED manipulation 
     functions and convolving with filters to get AB mags
     '''
-    def __init__(self,x,y,xUnit,yUnit):
+    def __init__(self,x,y,xUnit,yUnit,params={}):
         '''
         Inputs:
                 x = wavelength/frequency values, 1d array-like
@@ -43,6 +43,7 @@ class Spectrum:
                 yUnit = astropy.units.Unit of physical type luminosity/flux density /length or frequency
 
         '''
+        self.type = 'spectrum'
         # Validate x input
         wavelengths = np.asarray(x)
         spec = np.asarray(y)
@@ -88,14 +89,15 @@ class Spectrum:
             wavelengths = np.flipud(wavelengths)
             spec = np.flipud(spec)
         self.spec = spec
-        
+        self.params = params
+#------------------------------------------------------------------------------      
     def plot(self):
         x = self.wavelengths.value
         y = self.spec.value
         plt.plot(x,-2.5*np.log10(y))
-            
+#------------------------------------------------------------------------------            
     def convolve(self,filt):
-        if not isinstance(filt,Filter):
+        if not filt.type=='filter':
             raise TypeError('The "filter" you specified is invalid.')
         # Find the part of the spectrum where the FTC is defined
         startN,stopN = np.searchsorted(self.wavelengths.value,[filt.wavelengths[0].value,filt.wavelengths[-1].value])            
@@ -103,7 +105,6 @@ class Spectrum:
             startN-=1
         if stopN!=(len(self.wavelengths)-1):
             stopN+=1
-        print(startN,stopN)
         ls = self.wavelengths[startN:stopN].value
         # Resample filter
         newFtc = np.interp(ls,filt.wavelengths.value,filt.ftc)
@@ -114,8 +115,25 @@ class Spectrum:
         denominator = quad(denom,filt.wavelengths[0].value,0.999*filt.wavelengths[-1].value)
         ABmag = -2.5 * np.log10(numerator[0]/denominator[0]) - 48.60
         return(ABmag)
-         
-         
+#------------------------------------------------------------------------------    
+class BBsed():
+    '''
+    Broad Band spectrum. Intended to inherit model params from a Spectrum, 
+    mags are stored in a dictionary of filterName:magnitude pairs
+    '''
+    
+    
+    
+    def __init__(self,mags={},params={}):
+        self.type = 'bbsed'
+        self.params = params
+        self.mags = mags
+        
+    def addMag(self,filterName,mag):
+        self.mags[filterName]=mag
+        
+    
+    
 
         
         

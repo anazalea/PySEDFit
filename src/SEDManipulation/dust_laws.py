@@ -30,6 +30,7 @@ import math
 import numpy as np
 import spectrum
 from astropy import units as u
+from copy import deepcopy 
 
 def dustReddenSpectrum(spec,dustlaw,ebv):
     '''
@@ -53,8 +54,9 @@ def dustReddenSpectrum(spec,dustlaw,ebv):
     nDustLaw = dustLaws.index(dustlaw)
     specUnit = spec.spec.unit
     reddenedSpec = dustLawFuncs[nDustLaw](spec.wavelengths.to('micron').value,spec.spec.value,ebv) * u.Unit(specUnit)
-    return(reddenedSpec)
-    
+    newSpec = spectrum.Spectrum(deepcopy(spec.wavelengths).value,reddenedSpec.value,spec.wavelengths.unit,u.Unit(specUnit),params=deepcopy(spec.params)) 
+    newSpec.params['ebv']=ebv
+    return(newSpec)    
 #------------------------------------------------------------------------------ 
 def Calzetti2000(lam,lnu,ebv):
     '''

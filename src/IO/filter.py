@@ -31,7 +31,7 @@ class Filter:
     '''
     A filter.
     '''
-    def __init__(self,ftcFile,unit):
+    def __init__(self,ftcFile,unit,filtName):
         # Validate unit 
         try:
             unitType = u.get_physical_type(u.Unit(unit))
@@ -41,7 +41,7 @@ class Filter:
         if unitType not in ['length','frequency']:
             os.system("say '"+unit+" is neither a unit of frequency nor a unit of length. Get it together "+str(name)+"'")
             raise TypeError(unit,' is neither a unit of frequency nor a unit of length. Get it together.')
-            
+        self.name = filtName    
         # Load FTC
         if unitType == 'length':
             self.ftcLambda, self.ftcTransLam = np.loadtxt(ftcFile,unpack=True)

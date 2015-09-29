@@ -30,12 +30,14 @@ class Filter:
     '''
     A filter.
     '''
-    def __init__(self,x,xUnit,y):
+    def __init__(self,x,xUnit,y,filtName):
         '''
         x = values of frequency or wavelength at which FTC is defined, array-like
         xUnit = astropy.units.Unit of type lengthor frequency
         y = filter transmission at x, array of length (len(x))
         '''
+        self.type='filter'
+        self.name=filtName
         wavelengths = np.asarray(x)
         ftc = np.asarray(y)
         if x.ndim!=1:
@@ -59,5 +61,7 @@ class Filter:
         self.wavelengths = wavelengths
         self.ftc = ftc
     
+    def effectiveWavelength(self):
+        return(np.average(self.wavelengths,weights=self.ftc)*self.wavelengths.unit)
 
     
