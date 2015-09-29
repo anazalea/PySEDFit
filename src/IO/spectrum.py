@@ -121,9 +121,6 @@ class BBsed():
     Broad Band spectrum. Intended to inherit model params from a Spectrum, 
     mags are stored in a dictionary of filterName:magnitude pairs
     '''
-    
-    
-    
     def __init__(self,mags={},params={}):
         self.type = 'bbsed'
         self.params = params
@@ -131,6 +128,9 @@ class BBsed():
         
     def addMag(self,filterName,mag):
         self.mags[filterName]=mag
+    
+    def getMagArray(self):
+        return()
         
     
     

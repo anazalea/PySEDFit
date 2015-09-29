@@ -45,6 +45,10 @@ def dustReddenSpectrum(spec,dustlaw,ebv):
     '''
     #assert isinstance(spec,spectrum.Spectrum)
     assert isinstance(ebv,float)
+    if ebv==0.0:
+        newSpec = deepcopy(spec)
+        newSpec.params['ebv']=0.0
+        return(newSpec)
     dustLaws = ['Calzetti2000','Calzetti1997','LMC','SMC','MW','Dor30']
     dustLawFuncs = [Calzetti2000,Calzetti1997,LMC,SMC,MW,Dor30]
     if dustlaw not in dustLaws:

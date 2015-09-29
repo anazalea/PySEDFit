@@ -46,34 +46,34 @@ def ProcessSpectrum(spec,dustLaw=None,ebvs=None,igmLaw=None,igmOpacities=None,co
         spec = base spectrum to be modified, instance of Spectrum
         dustLaw = name of dust law to be applied (or None), one of ['Calzetti2000','Calzetti1997','LMC','SMC','MW','Dor30']
         ebvs = list of E(B-V) values to be applied to base spectrum
-        igmLaw = name of IGM attenuation law to be applied , one of []
+        igmLaw = name of IGM attenuation law to be applied , one of ['madau',inoue']
         igmOpacities = list of IGM opacity values to be applied 
         cosmology = cosmology to use, instance of astropy.cosmology
         zs = list of redshifts to which base spectrum will be shifted
         filters = list of filters to be convolved with modified spectra, if None specified, full spectra are returned
-        
+    Output:
+        list of modified spectra, len(ebvs*igmOpacities*zs)
+            if filters specified, list of bbsed objects at each combination of params
+            if filters==None, full spectra are returned
     '''    
     # Validate input
-        
     
-    spectra = [deepcopy(spec)] # spectra will store all of the modified spectra in a list
-    # If we're going to add dust/IGM attenuation/redshifting to spectrum and these quantities aren't defined
-    # in the original spectrum's params, add 0.0 values to make things easy later    
-    if dustLaw!=None and 'ebv' not in spectra[0].params.keys():
-        spectra[0].params['ebv']=0.0
-    if zs!=None and 'z' not in spectra[0].params.keys():
-        spectra[0].params['z']=0.0
-        
+    ProcessSpectrumValidator(spec,zs,cosmology,ebvs,dustLaw,igmLaw,igmOpacities,filters)
+    
+    spectra = [] # spectra will store all of the modified spectra in a list
+    if dustLaw == None:
+        spectra = [deepcopy(spec)]
+
     # Add requested ISM reddening to base spectrum, each reddened spectrum is appended to spectra
     if dustLaw!=None:
         ebvs = np.asarray(ebvs)
         ebvs = ebvs.reshape((len(ebvs))) 
         for ebv in ebvs:
-            newSpec = dust_laws.dustReddenSpectrum(spectra[0],dustLaw,ebv)
+            newSpec = dust_laws.dustReddenSpectrum(spec,dustLaw,ebv)
             spectra.append(newSpec)
     
     if igmLaw==None and cosmology==None: # Then we just want to return what we already have
-        if filters==None: # Then we're returning spectra
+        if filters==None: # Then we're returning spectra, don't need to do anything else
             return(spectra)
         else:
             bbseds = []
@@ -82,132 +82,125 @@ def ProcessSpectrum(spec,dustLaw=None,ebvs=None,igmLaw=None,igmOpacities=None,co
                 for filt in filters:
                     mag = spect.convolve(filt)
                     mybbsed.addMag(filt.name,mag)
-                bbseds.append(mybbsed)
+                bbseds.append(deepcopy(mybbsed))
             return(bbseds)
             
     # If we got here, we either want to redshift and IGM attenuate or just redshift
+    # We need a new list for storage (i.e. we don't necessarily want the z=0 cases from above)
+    zSpectra = []
+    bbseds = [] # which we'll fill if we're returning mags
     zs = np.asarray(zs)
     zs = zs.reshape(len(zs))
-    # Calculate dLs?
+    
     if igmLaw!=None:
         igmOpacities = np.asarray(igmOpacities)
         igmOpacities = igmOpacities.reshape((len(igmOpacities)))
-    bbseds = []
+        
     for z in zs:
+        dL = cosmo.luminosity_distance(z)
         for spect in spectra:
-            newSpec = RedshiftSpectrum(spectra[i],z,cosmology)
-            if igmLaw!=None:
+            mySpex = []
+            zSpec = RedshiftSpectrum(spect,z=z,dL=dL,cosmo=cosmology)
+            if igmLaw==None: # Or do we want to default to Madau?
+                if filters==None:
+                    zSpectra.append(zSpec)
+                else:
+                    mySpex.append(zSpec)
+            elif igmLaw!=None:
                 for igmO in igmOpacities:
-                    pass
-            else:
-                pass
-                
-                    
-            
-    
-    
-
-    return(spectra)
-#------------------------------------------------------------------------------    
-def OProcessSpectrum(spec,returnSpec=False,zs=None,cosmology=None,ebvs=None,dustLaw=None,igmLaw=None,igmOpacities=None,filters=None):
-    '''
-    Takes a single Spectrum instance and produces all combinations of reddening/redshifting requested, returns spectra or magnitudes
-    '''    
-    # Validate input
-
-    # If we're going to add dust/IGM attenuation/redshifting to spectrum and these quantities aren't defined
-    # in the original spectrum's params, add 0.0 values to make things easy later    
-    if dustLaw!=None and 'ebv' not in spec.params.keys():
-        spec.params['ebv']=0.0
-        # should also take values of e(b-v)=0 out of ebvs array
-    if zs!=None and 'z' not in spec.params.keys():
-        spec.params['z']=0.0
-    print(spec.params)
-    spectra = [deepcopy(spec)]    
-    
-    # Add requested ISM reddening to base spectrum, each reddened spectrum is appended to spectra
-    if dustLaw!=None:
-        ebvs = np.asarray(ebvs)
-        ebvs = ebvs.reshape((len(ebvs)))
-        for ebv in ebvs:
-            newSpec = dust_laws.dustReddenSpectrum(spec,dustLaw,ebv)
-            spectra.append(newSpec)
-            print(newSpec.params['ebv'])
-
-            
-    # Add requested IGM attenuation to each dust reddened spectrum in spectra, each attenuated spectrum
-    # will also be appended to spectra
-    if igmLaw!=None:
-        igmOpacities = np.asarray(igmOpacities).reshape((1))
-        # Do stuff
-    
-    # Redshift each spectrum in [spectra] to all requested redshifts and apply cosmological dimming
-    # If we're supposed to return full spectra, we'll keep them all in memory, otherwise unnecessary
-    if returnSpec: 
-        if cosmology!=None:
-            zs = np.asarray(zs)
-            zs = zs.reshape((len(zs)))
-            for z in zs:
-                for i in range(len(spectra)):
-                    newSpec = RedshiftSpectrum(spectra[i],z,cosmology)
-                    spectra.append(newSpec)
-        return(spectra)
-    
-    # If not spectra, we're returning bbSED objects
-    bbseds = []
-    if cosmology==None: # Then we just wanted restframe spectra convolved
-        for spect in spectra:
-            mybbsed = spectrum.BBsed(params=spect.params)
-            for filt in filters:
-                mag = spect.convolve(filt)
-                print(mag)
-                mybbsed.addMag(filt.name,mag)
-            bbseds.append(mybbsed)
+                    igmSpec = deepcopy(zSpec) # will be igmSpec = IGM_attenuation.IGMattenuate()
+                    igmSpec.params['igmOpacity']=igmO
+                    # currently not available, but for each igmO we'll get a new spectrum which will either be appended to spectra or turned into a bbsed if we're not returning spectra
+                    if filters==None:
+                        zSpectra.append(igmSpec)
+                    else:
+                        mySpex.append(igmSpec)
+            if filters!=None:
+                for mySpec in mySpex:
+                    mybbsed = spectrum.BBsed(params=deepcopy(mySpec.params))
+                    for filt in filters:
+                        filName =filt.name
+                        mag = mySpec.convolve(filt)
+                        mybbsed.addMag(filName,mag)
+                    bbseds.append(deepcopy(mybbsed))
+    if filters==None:
+        return(zSpectra)
+    else:
         return(bbseds)
-    print(len(spectra))
-    # We do need to redshift stuff before convolving, but we won't store redshifted spectra
+#------------------------------------------------------------------------------    
+def ProcessSpectrumValidator(spec,zs,cosmology,ebvs,dustLaw,igmLaw,igmOpacities,filters):
+    # Spectrum
+    try:
+        if spec.type!='spectrum':
+            raise TypeError('Input spectrum is not an instance of class Spectrum.')
+    except: # if there's no type attribute of spec
+        raise TypeError('Input spectrum is not an instance of class Spectrum.')
+        
+    # Redshifts
     zs = np.asarray(zs)
     zs = zs.reshape((len(zs)))
-    print(zs)
-    for z in zs:
-        for i in range(len(spectra)):
-            newSpec = RedshiftSpectrum(spectra[i],z,cosmology)
-            mybbsed = spectrum.BBsed(params=newSpec.params)
-            print(newSpec.params)
-            for filt in filters:
-                mag = newSpec.convolve(filt)
-                mybbsed.addMag(filt.name,mag)
-            bbseds.append(mybbsed)
-    return(bbseds)
-
-#------------------------------------------------------------------------------    
-def ProcessSpectrumValidator(spec,returnSpec,zs,cosmology,ebvs,dustLaw,igmLaw,igmOpacities,filters):
-    # z=0 not allowed
-    # if IGM law specified, cosmology and zs must be specified
-    pass
+    if np.any(zs<0.):
+        raise ValueError('All redshifts must be > 0.')
+        
+    # Cosmology - I don't know how to check this properly
+    try:
+        h=cosmology.H0
+    except:
+        TypeError('Input cosmology must be an astropy.cosmology object.')
+    
+    # IGM
+    if igmLaw!=None and zs==None:
+        raise ValueError('If an IGM attenuation law is specified, redshifts must be specified.')
+    if igmLaw!=None and igmLaw not in ['madau','inoue']:
+        raise ValueError('The requested IGM attenuation law is not recognized.')
+    # what constraints on IGM opacities? Just >0?
+        
+    # Dust
+    if dustLaw!=None and dustLaw not in ['Calzetti2000','Calzetti1997','LMC','SMC','MW','Dor30']:
+        raise ValueError('The requested dust law is not recognized.')
+    ebvs = np.asarray(ebvs)
+    ebvs = ebvs.reshape((len(ebvs)))
+    if np.any(ebvs<0.):
+        raise ValueError('Negative values of E(B-V) are not allowed.')
+    if np.any(ebvs>1.0):
+        raise ValueError('Values of E(B-V) > 1. are not allowed.')
+        
+    # Filters
+    if filters!=None:
+        if type(filters)!=list:
+            raise TypeError('Filters must be specified in a list. If only one is specified, input as [filter].')
+        for fil in filters:
+            try:
+                if fil.type!='filter':
+                    print('All filters in filter list must be instances of class Filter.')
+            except:
+                print('All filters in filter list must be instances of class Filter.')
+    
 #------------------------------------------------------------------------------
-def RedshiftSpectrum(spect,z,cosmo):
+def RedshiftSpectrum(spect,z,dL=None,cosmo=None):
     '''
     Redshift restframe spectrum to observed frame, apply cosmological dimming
     Inputs:
-        spec
-        z
-        cosmology
+        spec = Rest frame spectrum to be redshifted, instance of class Spectrum
+        z = redshift to which spectrum will be shifted
+            one of [dL,cosmology] must be specified
+        dL = luminosity distance associated with z, quantity (can be specified here to save time)
+        cosmology = cosmology in which to calculate dL(z) if it hasn't been specified, astropy.cosmology instance
     Output:
-        z_obs = Observed Spectrum 
+        z_obs = Observed Spectrum, instance of class Spectrum
     '''
-    dL = cosmo.luminosity_distance(z).to('m')
-    print(dL)
+    if dL==None:
+        dL = cosmo.luminosity_distance(z)
+    dL = dL.to('m')
     fNuNew = (spect.spec*u.Unit('m')**2)/(4*np.pi*dL**2/(1+z))
     newWavelengths = deepcopy(spect.wavelengths * (1.+z))
     newParams = deepcopy(spect.params)
     newParams['z']=z
     return(spectrum.Spectrum(newWavelengths.value,fNuNew.value,newWavelengths.unit,fNuNew.unit,params=newParams))
     
-
 #------------------------------------------------------------------------------
-#Test
-
+#Test Stuff
+    
 cosmo = cosmology.FlatLambdaCDM(H0=70, Om0=0.3)
 
 uf=np.genfromtxt('../../Testfiles/FTCs/uSDSS.ftc')
@@ -221,18 +214,34 @@ iSDSS = filterv2.Filter(iF[:,0],u.Unit('AA'),iF[:,1],'iSDSS')
 zf=np.genfromtxt('../../Testfiles/FTCs/zSDSS.ftc')
 zSDSS = filterv2.Filter(zf[:,0],u.Unit('AA'),zf[:,1],'zSDSS')
 filters = [uSDSS,gSDSS,rSDSS,iSDSS,zSDSS]
+filNames = []
+for filt in filters:
+    filNames.append(filt.name)
+lambdas = []
+for filt in filters:
+    lambdas.append(filt.effectiveWavelength().value)
 
-f = np.genfromtxt('../../Testfiles/chab_tau0.1_m20.out.cols',usecols=(0,50))
+f = np.genfromtxt('../../Testfiles/chab_tau0.1_m20.out.cols',usecols=(0,100))
 spec = spectrum.Spectrum(f[:,0],f[:,1],u.Unit('Angstrom'),u.Unit('solLum')/u.Unit('Angstrom'))
-spec.params['Age']=7.
-#newspex=ProcessSpectrum(spec,filters=filters,cosmology=cosmo,zs=np.arange(0,1.,0.2)[1:],dustLaw='Calzetti2000',ebvs=np.arange(0,1.,0.2)[1:])
-newspex=ProcessSpectrum(spec,dustLaw='Calzetti2000',ebvs=np.arange(0.1,1.,0.2))
+spec.params['Age']='Yo mama.'
+newspex=ProcessSpectrum(spec,cosmology=cosmo,zs=[0.01,0.05,0.1,0.25,0.5,0.75,1.0],dustLaw='Calzetti2000',ebvs=[0.0,0.5])
 
 import matplotlib.cm as cm
 i=0
 for spex in newspex:
-    plt.plot(spex.wavelengths.value,-2.5*np.log10(spex.spec.value)-48.6,color=cm.jet(i/len(newspex)))
+    plt.plot(spex.wavelengths.value,-2.5*np.log10(spex.spec.value)-48.6,color=cm.jet(i/len(newspex)),label='z='+str(round(spex.params['z'],3)))
     i+=1
-
 plt.gca().invert_yaxis()
-plt.xlim(0,2000)
+plt.xlim(2000,9000)
+
+newbbspex=ProcessSpectrum(spec,filters=filters,cosmology=cosmo,zs=[0.01,0.05,0.1,0.25,0.5,0.75,1.0],dustLaw='Calzetti2000',ebvs=[0.0,0.5])
+
+i=0
+for spex in newbbspex:
+    pts = []
+    for fn in filNames:
+        pts.append(spex.mags[fn])
+    plt.scatter(lambdas,pts,color=cm.jet(i/len(newspex)),s=10)
+    i+=1
+    
+plt.legend()
