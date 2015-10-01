@@ -221,7 +221,7 @@ lambdas = []
 for filt in filters:
     lambdas.append(filt.effectiveWavelength().value)
 
-f = np.genfromtxt('../../Testfiles/chab_tau0.1_m20.out.cols',usecols=(0,100))
+f = np.genfromtxt('../../Testfiles/chab_tau0.1_m20.out.cols',usecols=(0,2))
 spec = spectrum.Spectrum(f[:,0],f[:,1],u.Unit('Angstrom'),u.Unit('solLum')/u.Unit('Angstrom'))
 spec.params['Age']='Yo mama.'
 newspex=ProcessSpectrum(spec,cosmology=cosmo,zs=[0.01,0.05,0.1,0.25,0.5,0.75,1.0],dustLaw='Calzetti2000',ebvs=[0.0,0.5])
