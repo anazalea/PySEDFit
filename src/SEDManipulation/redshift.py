@@ -33,6 +33,7 @@ import dust_laws
 import filterv2
 from copy import deepcopy 
 import matplotlib.pyplot as plt
+import IGM_attenuation
 
 #------------------------------------------------------------------------------
 def make_bbsed():
@@ -108,8 +109,8 @@ def ProcessSpectrum(spec,dustLaw=None,ebvs=None,igmLaw=None,igmOpacities=None,co
                     mySpex.append(zSpec)
             elif igmLaw!=None:
                 for igmO in igmOpacities:
-                    igmSpec = deepcopy(zSpec) # will be igmSpec = IGM_attenuation.IGMattenuate()
-                    igmSpec.params['igmOpacity']=igmO
+                    igmSpec = IGM_attenuation.IGMAttenuateSpectrum(zSpec,igmLaw,igmO,z)
+                    #igmSpec = deepcopy(zSpec) # will be igmSpec = IGM_attenuation.IGMattenuate()
                     # currently not available, but for each igmO we'll get a new spectrum which will either be appended to spectra or turned into a bbsed if we're not returning spectra
                     if filters==None:
                         zSpectra.append(igmSpec)
@@ -151,7 +152,7 @@ def ProcessSpectrumValidator(spec,zs,cosmology,ebvs,dustLaw,igmLaw,igmOpacities,
     # IGM
     if igmLaw!=None and zs==None:
         raise ValueError('If an IGM attenuation law is specified, redshifts must be specified.')
-    if igmLaw!=None and igmLaw not in ['madau','inoue']:
+    if igmLaw!=None and igmLaw not in ['Madau','Inoue']:
         raise ValueError('The requested IGM attenuation law is not recognized.')
     # what constraints on IGM opacities? Just >0?
         
@@ -224,17 +225,19 @@ for filt in filters:
 f = np.genfromtxt('../../Testfiles/chab_tau0.1_m20.out.cols',usecols=(0,2))
 spec = spectrum.Spectrum(f[:,0],f[:,1],u.Unit('Angstrom'),u.Unit('solLum')/u.Unit('Angstrom'))
 spec.params['Age']='Yo mama.'
-newspex=ProcessSpectrum(spec,cosmology=cosmo,zs=[0.01,0.05,0.1,0.25,0.5,0.75,1.0],dustLaw='Calzetti2000',ebvs=[0.0,0.5])
+newspex=ProcessSpectrum(spec,cosmology=cosmo,zs=[0.5,1.0],dustLaw='Calzetti2000',ebvs=[0.0,0.5],igmLaw='Madau',igmOpacities=[0.5,1.0])
 
 import matplotlib.cm as cm
 i=0
 for spex in newspex:
     plt.plot(spex.wavelengths.value,-2.5*np.log10(spex.spec.value)-48.6,color=cm.jet(i/len(newspex)),label='z='+str(round(spex.params['z'],3)))
     i+=1
+plt.ylim(30,50)
 plt.gca().invert_yaxis()
-plt.xlim(2000,9000)
+plt.xlim(500,9000)
 
-newbbspex=ProcessSpectrum(spec,filters=filters,cosmology=cosmo,zs=[0.01,0.05,0.1,0.25,0.5,0.75,1.0],dustLaw='Calzetti2000',ebvs=[0.0,0.5])
+
+newbbspex=ProcessSpectrum(spec,filters=filters,cosmology=cosmo,zs=[1.0],dustLaw='Calzetti2000',ebvs=[0.0,0.5])
 
 i=0
 for spex in newbbspex:
