@@ -3,6 +3,8 @@ import re, os
 
 #FIXME: add in other optional parameters
 
+
+
 def SetParams(pfile, paramList, args=None):
     """Read in parameters from a file and overwrite default params. 
     Parameter file must have lines of the form 'keyword value'.
@@ -228,7 +230,7 @@ class Param(object):
     def __init__(self, key, defaultValue=None, dataType=str,  isList=False, 
                  multipleKey=False, mandatory=False, maxSize=None, 
                  allowedValues=None, canBeNeg=True, canHaveSpace=True,
-                 assocKeys=[], sameLengthKeys=[], flattenList=False):
+                 assocKeys=[], sameLengthKeys=[], flattenList=False,outputfmt='%s '):
         self.key = key
         self.defaultValue = defaultValue
         self.dataType = dataType
@@ -242,6 +244,7 @@ class Param(object):
         self.assocKeys = assocKeys
         self.sameLengthKeys = sameLengthKeys
         self.flattenList = flattenList
+        self.outputFmt = outputfmt
 
         if self.isList:
             if not isinstance(self.dataType, list):
@@ -344,10 +347,12 @@ class Param(object):
             value = passedValues[0]
 
         if self.multipleKey:
+            
             if not hasattr(self, "value"):
                 self.value = [value]
             else:
                 self.value.append(value)
+            
             if self.flattenList and isinstance(self.value[0], list):
                 temp = []
                 for sublist in self.value:
@@ -379,7 +384,7 @@ def formatConversion(x):
     return x
 
 #########################################################################
-#FIXME: move to main module???
+
 fitsedParams = [Param("fitting_method", defaultValue="brute", 
                       allowedValues=["brute", "tree"]),
                 Param("model_flux_unit", defaultValue="mag",
@@ -438,18 +443,36 @@ fitsedParams = [Param("fitting_method", defaultValue="brute",
                 Param("yourname",defaultValue="playa")
                       ]
 
-makesedParams = [Param("model_file", mandatory=True, canHaveSpace=False),
-                 Param("filter_names", mandatory=True, isList=True, 
-                       multipleKey=True, flattenList=True),
-                 Param("extinction_law", defaultValue="none",
-                       allowedValues=["none", "calzetti2000", "mw", "lmc",
-                                    "30Dor"]),
-                 Param("redshifts", isList=True, defaultValue=["values", 0.0],
-                       dataType=[str, float]),
-                 Param("cosmology", isList=True, dataType=float),
-                 Param("cosmic_opacity", defaultValue=1.0, dataType=float),
-                 Param("output_file", mandatory=True, canHaveSpace=False),
-                 Param("output_dir", defaultValue=os.getcwd()),
-                 Param("output_overwrite", defaultValue=False, dataType=bool)]
-#Param("model_columns", defaultValue=["all"], isList=True,
-                 #      dataType=[str, int]),
+makesedParams = [
+                Param("rffmt", mandatory=True,  
+                      dataType=str, allowedValues=['galaxev']),
+                Param("dotsed", dataType=str),
+                Param("dotfourcolor", dataType=str),
+                Param("filter_dir",dataType=str),
+                Param("filter_names",dataType=[str,str],  
+                       multipleKey=True,mandatory=True,isList=True),
+                Param("redshifts", isList=True, dataType=[str,float,float,float],
+                      allowedValues=[['range','values'],None,None,None],
+                      ),
+                Param("igm_law", dataType=str, allowedValues=['madau']),
+                Param("igm_opacities",dataType=[str,float,float,float],isList=True,
+                    allowedValues=[['range','values'],None,None,None]),
+                Param("dust_law",dataType=str, allowedValues=['calzetti2000',\
+                'calzetti1997','lmc','smc','mw','dor30']),
+                Param("ebvs",isList=True,dataType=[str,float,float,float],
+                      allowedValues=[['range','values'],None,None,None]),
+                Param('returnmags',dataType=bool,defaultValue=False),
+                Param('output_file',dataType=str)
+              
+        
+                ]
+                
+                
+def SetMakeSedParams(pfile,args=None):
+    params = SetParams(pfile, makesedParams, args)
+    return(params)
+    
+def SetFitSedParams(pfile,args=None):
+    params = SetParams(pfile, fitsedParams, args)
+    return(params)
+

@@ -1,0 +1,69 @@
+# -------------------------- Models -----------------------------
+
+MODEL_DIR              	/home/agolob/SEDfit/BCmodels/		# directory that contains model file. Can be left blank, but otherwise must end with a "/"
+MODEL_BBSED_FILE ssp.bbsed        # The name of the data file	
+
+#                       V I z I1 I2
+MODEL_MAGS		   7 8 9 10 11 12	# columns that contain the model magnitudes (not that in perl the first column is column 0!)
+
+# 	the parameter's column, name, output format, and optional marker (marker: if "fluxscale" then output multiplied by normalization; if -XXX then this is parameter to be used for generating input string for best-fitting spectrum)
+MODEL_PARAM		0 	z            	     	%6.2f 		REDSHIFTS
+MODEL_PARAM		1 	model        	%2i			MODEL_NUMBERS
+MODEL_PARAM		2 	E(B-V)       	%4.2f		EXTINCTION_EBV 
+MODEL_PARAM		4 	age(logGyr)  	%9.6f      	
+MODEL_PARAM		5 	Mstars(Msun) 	%9.4e 		fluxscale
+MODEL_PARAM		6 	SFR(Msun/yr) 	%9.4e 		fluxscale  
+
+
+#  the parameters' values can be restricted/fixed. options are:
+# 	C range X1 X2	where C is the culumn # for the parameter as given in MODEL_PARAM
+# 	C closeval X1	where C is the column # for the parameter as given in MODEL_PARAM and X1 is the closest parameter value
+# 	C closecol D	where C is the column # for the parameter as given in MODEL_PARAM and D is the column # in the data file as given in DATA_PARAM
+#RESTRICT_PARAM		0 	range 		1.6 3.0
+#RESTRICT_PARAM		2	closeval	0.1
+#RESTRICT_PARAM		4	closeval	8
+
+# -------------------------- Output control ---------------------
+
+OUTPUT_FILE             limtest.out               # file to which output will be written; if none supplied then output to screen; 
+OUTPUT_OVERWRITE        yes                      # overwrite an existing output file? yes or no
+
+BESTFIT_SPECTRA_YN	yes			# generate the param.make_bbsed file for making best-fit model spectra? 
+BESTFIT_SPECTRA_MKFILE	limtest.make_bbsed.param			# name of file which will contain instructions for generating best-fit model spectra
+
+CHISQ_MATRIX_YN		no			# generate the chisq matrix file (uses a lot of disk space!!)?
+CHISQ_MATRIX_DIR	chisq_matrices/		# directory that will contain the chisq matrices. can be left blank but otherwise must end with a "/"
+
+#FIT_ERRORBARS		none
+FIT_ERRORBARS		fraction 0.683 500			# errorbars for fit parameters. one of: [ none / fraction / Dchisq ]
+						#	none
+						# 	Dchisq  [number]
+						# 	fraction [number between 0 and 1, e.g. 0.683]  [Number of iterations]
+
+
+# -------------------------- Data -------------------------------
+DATA_DIR			/home/agolob/free/		# directory that contains the data file. can be left blank but otherwise must end with a "/"
+DATA_FILE		bBXav.cat		# the file that contains the data
+#DATA_PARAM		0 	ID1 	%6i	DATAOBJID			# column, name, output format
+#DATA_PARAM	0 	ID1 	%6i					# column, name, output format
+#DATA_PARAM		1	redshift	%5.2f	
+#
+#                       V  Ic z' I1 I2
+DATA_MAGS		      	    0 3 6 9 12 15	# Columns that contain the data
+DATA_UNCERTAINTIES	    1 4 7 10 13 16	# Columns that contain the data uncertainties
+#DATA_MAG_OFFSETS	   1 -0.2 0.2 -1 # To be added to DATA_MAGS to adjust Zeropoints. One per filter. Comment out if none are desired
+
+DATA_UPPERLIM_YN	     	 yes          # fit upper limits properly using the maximum likelihood approach?  (CPU-intensive)     	   
+DATA_UPPERLIM_FLAG_COLS 0 3 6 9 12 15	      	        # columns that contain the DATA_UPPERLIM_FLAG_VALS flags. If none specified then defaults to columns specified in DATA_MAGS;
+DATA_UPPERLIM_FLAG_VALS	 99.0    	# value in the DATA_UPPERLIM_COLS column that flags that this entry is an upper limit; single value or one per mag
+DATA_UPPERLIM_FLAG_OPER   =  		# operation to evaluate the upper limit flag; [ = / > / < / >= / <=] , single value, if none specified then defaults to =
+DATA_UPPERLIM_LIM_COLS	    2 5 8 11 14 17	    	# columns that contain the upper limit values.  if left blank then they are assumed to be the DATA_UNCERTAINTIES columns
+DATA_UPPERLIM_NSIGMA        1		# the value of the upper limit in sigmas;  single value or one value per mag
+
+
+#  ----------------- Fit control parameters ---------------------
+
+#MAG_SOFTENING		0.03 0.02 0.03 0.25	# softening to be added to the uncertainties (single value for all filters)
+MAG_SOFTENING		0.15 			# softening to be added to the uncertainties (single value for all filters)
+FITMETHOD_UPPERLIM    downhill 10
+VERBOSE no

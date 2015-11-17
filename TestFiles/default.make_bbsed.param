@@ -1,0 +1,43 @@
+
+# -------------------------- Models -----------------------------
+
+MODEL_FILE 		tauminus1.sed	# name of the model spectra file
+MODEL_DIR 		/home/agolob/SEDfit/BCmodels/   # directory that contains model files. can be left blank, but otherwise must end with a "/"
+BC_PARAM_FILE	tauminus1.4color # file that contains the BC2003 link between model sed and its age, mass, and so forth. Optional but useful
+BC_PARAM_DIR 		/home/agolob/SEDfit/BCmodels/   # directory that contains the BC parameter file  "/"
+MODEL_NUMBERS		all			# model numbers to use:all, OR range MIN MAX STEP, OR values X1 X2 X3 X4...; 
+
+OUTPUT_FILE		tauminus1MW.bbsed		# file to which output will be written;  if none supplied then output to screen
+OUTPUT_OVERWRITE  	yes			# overwrite an existing output file? yes or no
+
+# -------------------------- Filters ----------------------------
+
+FILTER_DIR	/home/agolob/SEDfit/FTCs/		# directory with filter files. can be left blank, but if not blank then must end with a "/"
+FILTER_NAMES		u_steidel.ftc         # name(s) of .ftc filter file(s); can be one per line or many (space separated) on one line
+FILTER_NAMES		g_steidel.ftc
+FILTER_NAMES		r_steidel.ftc
+FILTER_NAMES		I_LRIS.ftc
+FILTER_NAMES		H.ftc
+FILTER_NAMES		Kp.dave.ftc  # (?)
+	
+
+# -------------------------- Dust -------------------------------
+
+EXTINCTION_EBV  range 0 0.80 0.01           # E(B-V) to generate: range MIN MAX STEP, OR values X1 X2 X3 X4...; 
+EXTINCTION_R    3.1                   # R for  extinction law (Calzetti recommends R=4.05), but others use 3.1 
+EXTINCTION_LAW  MW_fitzpatrick1986           # the supported laws are: 
+                                        #       calzetti2000            (Calzetti 2000 starburst law)
+                                        #       calzetti1997            (Calzetti 1997 starburst law)
+                                        #       LMC_fitzpatrick1986     (Fitzpatrick 1986 LMC)
+                                        #       MW_fitzpatrick1986      (Milky Way: Seaton via Fitzpatrick)
+                                        #       30Dor_fitzpatrick1986   (Fitzpatrick 1986 30 Doradus)                           
+                                        #       SMC_prevot1984          (Prevot et al 1984 SMC)
+
+# -------------------------- Others -----------------------------
+
+REDSHIFTS		range 1.6 2.7 0.01	# redshifts to generate: range MIN MAX STEP, OR values X1 X2 X3 X4...; 
+COSMOLOGY		0.3 0.7 70		# cosmological parameters Omega_M, Omega_L, Ho (in units of Omega, Omega, km/s/Mpc)
+IGM_ATTENUATION 	madau
+COSMIC_OPACITY		1			# amount cosmic (Madau 1995) opacity to use: values X1 X2... where f'=f*opacity^Xn 
+SPECMODE		magnitudes		# magnitudes OR spectra
+

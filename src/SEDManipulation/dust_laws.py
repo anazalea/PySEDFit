@@ -49,7 +49,7 @@ def dustReddenSpectrum(spec,dustlaw,ebv):
         newSpec = deepcopy(spec)
         newSpec.params['ebv']=0.0
         return(newSpec)
-    dustLaws = ['Calzetti2000','Calzetti1997','LMC','SMC','MW','Dor30']
+    dustLaws = ['calzetti2000','calzetti1997','lmc','smc','mw','dor30']
     dustLawFuncs = [Calzetti2000,Calzetti1997,LMC,SMC,MW,Dor30]
     if dustlaw not in dustLaws:
         raise ValueError(dustlaw,' is not a valid dust law.')

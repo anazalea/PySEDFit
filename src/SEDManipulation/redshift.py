@@ -35,12 +35,9 @@ from copy import deepcopy
 import matplotlib.pyplot as plt
 import IGM_attenuation
 
-#------------------------------------------------------------------------------
-def make_bbsed():
-    pass
 
 #------------------------------------------------------------------------------
-def ProcessSpectrum(spec,dustLaw=None,ebvs=None,igmLaw=None,igmOpacities=None,cosmology=None,zs=None,filters=None):
+def ProcessSpectrum(spec,dustLaw=None,ebvs=None,igmLaw=None,igmOpacities=None,cosmo=None,zs=None,filters=None,returnMag=True):
     '''
     Takes a single Spectrum instance and produces all combinations of reddening/redshifting requested, returns spectra or magnitudes
     Inputs:
@@ -52,6 +49,7 @@ def ProcessSpectrum(spec,dustLaw=None,ebvs=None,igmLaw=None,igmOpacities=None,co
         cosmology = cosmology to use, instance of astropy.cosmology
         zs = list of redshifts to which base spectrum will be shifted
         filters = list of filters to be convolved with modified spectra, if None specified, full spectra are returned
+        mags = bool, if True returns AB mags for each filter, if False returns erg s−1 cm−2 Hz−1
     Output:
         list of modified spectra, len(ebvs*igmOpacities*zs)
             if filters specified, list of bbsed objects at each combination of params
@@ -101,7 +99,7 @@ def ProcessSpectrum(spec,dustLaw=None,ebvs=None,igmLaw=None,igmOpacities=None,co
         dL = cosmo.luminosity_distance(z)
         for spect in spectra:
             mySpex = []
-            zSpec = RedshiftSpectrum(spect,z=z,dL=dL,cosmo=cosmology)
+            zSpec = RedshiftSpectrum(spect,z=z,dL=dL,cosmo=cosmo)
             if igmLaw==None: # Or do we want to default to Madau?
                 if filters==None:
                     zSpectra.append(zSpec)
@@ -121,7 +119,7 @@ def ProcessSpectrum(spec,dustLaw=None,ebvs=None,igmLaw=None,igmOpacities=None,co
                     mybbsed = spectrum.BBsed(params=deepcopy(mySpec.params))
                     for filt in filters:
                         filName =filt.name
-                        mag = mySpec.convolve(filt)
+                        mag = mySpec.convolve(filt,returnMag=returnMag)
                         mybbsed.addMag(filName,mag)
                     bbseds.append(deepcopy(mybbsed))
     if filters==None:
@@ -143,7 +141,6 @@ def ProcessSpectrumValidator(spec,zs,cosmology,ebvs,dustLaw,igmLaw,igmOpacities,
     if np.any(zs<0.):
         raise ValueError('All redshifts must be > 0.')
         
-    # Cosmology - I don't know how to check this properly
     try:
         h=cosmology.H0
     except:
@@ -157,15 +154,15 @@ def ProcessSpectrumValidator(spec,zs,cosmology,ebvs,dustLaw,igmLaw,igmOpacities,
     # what constraints on IGM opacities? Just >0?
         
     # Dust
-    if dustLaw!=None and dustLaw not in ['Calzetti2000','Calzetti1997','LMC','SMC','MW','Dor30']:
+    if dustLaw!=None and dustLaw not in ['calzetti2000','calzetti1997','lmc','smc','mw','dor30']:
         raise ValueError('The requested dust law is not recognized.')
-    ebvs = np.asarray(ebvs)
-    ebvs = ebvs.reshape((len(ebvs)))
-    if np.any(ebvs<0.):
-        raise ValueError('Negative values of E(B-V) are not allowed.')
-    if np.any(ebvs>1.0):
-        raise ValueError('Values of E(B-V) > 1. are not allowed.')
-        
+        ebvs = np.asarray(ebvs)
+        ebvs = ebvs.reshape((len(ebvs)))
+        if np.any(ebvs<0.):
+            raise ValueError('Negative values of E(B-V) are not allowed.')
+        if np.any(ebvs>1.0):
+            raise ValueError('Values of E(B-V) > 1. are not allowed.')
+            
     # Filters
     if filters!=None:
         if type(filters)!=list:
@@ -201,7 +198,7 @@ def RedshiftSpectrum(spect,z,dL=None,cosmo=None):
     
 #------------------------------------------------------------------------------
 #Test Stuff
-    
+'''
 cosmo = cosmology.FlatLambdaCDM(H0=70, Om0=0.3)
 
 uf=np.genfromtxt('../../Testfiles/FTCs/uSDSS.ftc')
@@ -225,7 +222,7 @@ for filt in filters:
 f = np.genfromtxt('../../Testfiles/chab_tau0.1_m20.out.cols',usecols=(0,2))
 spec = spectrum.Spectrum(f[:,0],f[:,1],u.Unit('Angstrom'),u.Unit('solLum')/u.Unit('Angstrom'))
 spec.params['Age']='Yo mama.'
-newspex=ProcessSpectrum(spec,cosmology=cosmo,zs=[0.5,1.0],dustLaw='Calzetti2000',ebvs=[0.0,0.5],igmLaw='Madau',igmOpacities=[0.5,1.0])
+newspex=ProcessSpectrum(spec,cosmology=cosmo,zs=[1.0],igmLaw='Madau',igmOpacities=[0.25,0.5,1.0])
 
 import matplotlib.cm as cm
 i=0
@@ -248,3 +245,4 @@ for spex in newbbspex:
     i+=1
     
 plt.legend()
+'''

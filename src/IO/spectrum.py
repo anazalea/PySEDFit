@@ -21,7 +21,7 @@ from __future__ import division, print_function
 from astropy import constants as const
 from astropy import units as u
 import numpy as np
-from scipy.integrate import quad
+from scipy.integrate import trapz
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 import os
@@ -96,7 +96,7 @@ class Spectrum:
         y = self.spec.value
         plt.plot(x,-2.5*np.log10(y))
 #------------------------------------------------------------------------------            
-    def convolve(self,filt):
+    def convolve(self,filt,returnMag=True):
         if not filt.type=='filter':
             raise TypeError('The "filter" you specified is invalid.')
         # Find the part of the spectrum where the FTC is defined
@@ -111,10 +111,16 @@ class Spectrum:
         num = interp1d(ls,newFtc * self.spec[startN:stopN])
         denom = interp1d(ls,newFtc)
         # Integrate
-        numerator = quad(num,filt.wavelengths[0].value,0.999*filt.wavelengths[-1].value)
-        denominator = quad(denom,filt.wavelengths[0].value,0.999*filt.wavelengths[-1].value)
-        ABmag = -2.5 * np.log10(numerator[0]/denominator[0]) - 48.60
-        return(ABmag)
+        numerator = trapz(num(filt.wavelengths[0:-1].value),x=filt.wavelengths[0:-1].value)
+        denominator = trapz(denom(filt.wavelengths[0:-1].value),x=filt.wavelengths[0:-1].value)
+        if returnMag:
+            ABmag = -2.5 * np.log10(numerator/denominator) - 48.60
+            if np.isnan(ABmag):
+                print(self.params)
+            return(ABmag*u.Unit('mag'))
+        else:
+            return(u.Unit('erg') * u.Unit('s')**-1 * u.Unit('cm')**-2 * u.Unit('Hz')**-1\
+                *numerator[0]/denominator[0]) # erg s−1 cm−2 Hz−1
 #------------------------------------------------------------------------------    
 class BBsed():
     '''

@@ -8,12 +8,7 @@ model_param 0 aaa %5.4f fluxscale
 model_param 1 bbb %4.2e 
 model_param 2 ccc %4.2e fluxscale
 data_file nnnn.foo
-model_mag_columns 0
-data_mag_columns 1 2 3 
-data_error_columns 567 9
 output_file mdmdm
-model_mag_columns 1
 montecarlo_iters 3000
-model_mag_unit AV
 fitting_method brute
 
