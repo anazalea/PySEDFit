@@ -14,3 +14,5 @@ dust_law Calzetti2000
 returnmags True
 ebvs values 0.5
 output_file /Users/anneya/PySEDfit/TestFiles/testTrapz.bbsed
+#cosmology LCDM 0.3 0.7 70
+cosmology WMAP 9 # or WMAP X cosmological parameters Omega_M, Omega_L, Ho (in units of Omega, Omega, km/s/Mpc)

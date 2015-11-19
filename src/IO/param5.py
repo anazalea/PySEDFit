@@ -462,8 +462,9 @@ makesedParams = [
                 Param("ebvs",isList=True,dataType=[str,float,float,float],
                       allowedValues=[['range','values'],None,None,None]),
                 Param('returnmags',dataType=bool,defaultValue=False),
-                Param('output_file',dataType=str)
-              
+                Param('output_file',dataType=str),
+                Param('cosmology',dataType=[str,float,float,float],allowedValues=\
+                    [['lcdm','wmap'],None,None,None],isList=True)
         
                 ]
                 

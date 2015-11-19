@@ -43,8 +43,12 @@ def main(params):
     filters = readFilters(params['filter_dir'],params['filter_names'])
     
     # Make cosmology
-    cosmo = cosmology.FlatLambdaCDM(H0=70, Om0=0.3)
-    
+    if params['cosmology'][0]=='LCDM':
+        cosmo = cosmology.LambdaCDM(Om0=params['cosmology'][1],Ode0=params['cosmology'][2],H0=params['cosmology'][3])
+    else:
+        wmaps,ns=[cosmology.WMAP5,cosmology.WMAP7,cosmology.WMAP9],[5.,7.,9.]
+        cosmo = wmaps[ns.index(params['cosmology'][1])]
+
     # Parse zs
     if params['redshifts'][0]=='range':
         redshifts = np.arange(params['redshifts'][1],params['redshifts'][2],params['redshifts'][3])
@@ -140,7 +144,7 @@ def readFilters(filterDir,filterStuff):
 
 #------------------------------------------------------------------------------    
 def ReadGalaxev(dotSed,dot4color):
-   '''
+    '''
     Reads data from a .sed and .4color file produced by galaxev (reformatted for SEDfit -WE SHOULD CHANGE THIS)
     Creates spectrum objects for each rest frame spectrum
     !!! DOES THIS RECORD THE PARAMS RIGHT IN ALL CASES?
@@ -159,8 +163,8 @@ def ReadGalaxev(dotSed,dot4color):
         spex.append(spectrum.Spectrum(sed[:,0],sed[:,i+1],u.Unit('AA'),lSunA,params=ps))
     return(spex)
     
-ps=param5.SetMakeSedParams('/Users/anneya/PySEDFit/Testfiles/testmakebbsed.param')
-a=main(ps)
+#ps=param5.SetMakeSedParams('/Users/anneya/PySEDFit/Testfiles/testmakebbsed.param')
+#a=main(ps)
 '''
 if __name__ == "__main__":
     pfile = sys.argv[1]
