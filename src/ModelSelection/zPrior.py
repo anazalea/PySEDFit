@@ -113,9 +113,9 @@ def ProbRemoval(data,h,rMags):
         
         
 # Make prior
-# cat = np.genfromtxt('/Users/anneya/PySEDFit/TestFiles/cmcgals_ugrizy_randomized.cat',usecols=(1,6))
-# rMids,zMids,h=makePriorGrid(cat[:,0],cat[:,1],0.5,'')
-
+cat = np.genfromtxt('/Users/anneya/PySEDFit/TestFiles/cmcgals_ugrizy_randomized.cat',usecols=(1,6))
+rMids,zMids,h=makePriorGrid(cat[:,0],cat[:,1],0.5,'')
+'''
 # Read data 
 magSoftening = 0.0
 cat = np.genfromtxt('/Users/anneya/PySEDFit/TestFiles/LSST_OneYear_simObs_noisier.cat')
@@ -139,3 +139,4 @@ dcdt=mcdt.DaisyChainDualTree(dataFlux,dDataFlux,modelFlux,modelParams,200,column
 #cols = cm.jet((rMags-17.0041)/8.)
 
 #plt.scatter(z,zC,color='blue',alpha=0.5,label='Corrected',s=20)
+'''
