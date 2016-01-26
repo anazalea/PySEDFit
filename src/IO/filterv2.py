@@ -62,6 +62,6 @@ class Filter:
         self.ftc = ftc
     
     def effectiveWavelength(self):
-        return(np.average(self.wavelengths,weights=self.ftc)*self.wavelengths.unit)
+        return(self.wavelengths.unit*np.average(self.wavelengths,weights=self.ftc))
 
     

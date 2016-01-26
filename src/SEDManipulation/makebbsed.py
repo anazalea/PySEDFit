@@ -43,7 +43,8 @@ def main(params):
     filters = readFilters(params['filter_dir'],params['filter_names'])
     
     # Make cosmology
-    if params['cosmology'][0]=='LCDM':
+    print(params['cosmology'][0])
+    if params['cosmology'][0]=='lcdm':
         cosmo = cosmology.LambdaCDM(Om0=params['cosmology'][1],Ode0=params['cosmology'][2],H0=params['cosmology'][3])
     else:
         wmaps,ns=[cosmology.WMAP5,cosmology.WMAP7,cosmology.WMAP9],[5.,7.,9.]
@@ -151,6 +152,9 @@ def ReadGalaxev(dotSed,dot4color):
     Inputs:
         dotSed = filename of .sed file
         dot4color = filename of .4color
+        models = which models from galaxev files to be used on of:
+                                ALL, [VALUES,1,2,3,...,n], [RANGE,min,max,step]
+                                !!! SHOULD ADD SELECTION BY AGE AND STUFF HERE
     Output:
         List of spectrum objects
     '''    
@@ -163,12 +167,12 @@ def ReadGalaxev(dotSed,dot4color):
         spex.append(spectrum.Spectrum(sed[:,0],sed[:,i+1],u.Unit('AA'),lSunA,params=ps))
     return(spex)
     
-#ps=param5.SetMakeSedParams('/Users/anneya/PySEDFit/Testfiles/testmakebbsed.param')
-#a=main(ps)
+ps=param5.SetMakeSedParams('/Users/anneya/PySEDFit/Testfiles/testmakebbsed.param')
+a=main(ps)
 '''
 if __name__ == "__main__":
     pfile = sys.argv[1]
     args = sys.argv[2:]
-    params = param5.SetParams(pfile,args)
+    params = param5.SetMakeSedParams(pfile,args)
     main(params)
 '''

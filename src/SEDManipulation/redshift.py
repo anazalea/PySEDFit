@@ -56,6 +56,7 @@ def ProcessSpectrum(spec,dustLaw=None,ebvs=None,igmLaw=None,igmOpacities=None,co
             if filters==None, full spectra are returned
     '''    
     # Validate input
+    print(spec.spec)
     
     ProcessSpectrumValidator(spec,zs,cosmology,ebvs,dustLaw,igmLaw,igmOpacities,filters)
     
@@ -69,6 +70,7 @@ def ProcessSpectrum(spec,dustLaw=None,ebvs=None,igmLaw=None,igmOpacities=None,co
         ebvs = ebvs.reshape((len(ebvs))) 
         for ebv in ebvs:
             newSpec = dust_laws.dustReddenSpectrum(spec,dustLaw,ebv)
+            print(newSpec.spec)
             spectra.append(newSpec)
     
     if igmLaw==None and cosmology==None: # Then we just want to return what we already have
@@ -189,8 +191,14 @@ def RedshiftSpectrum(spect,z,dL=None,cosmo=None):
     '''
     if dL==None:
         dL = cosmo.luminosity_distance(z)
-    dL = dL.to('m')
-    fNuNew = (spect.spec*u.Unit('m')**2)/(4*np.pi*dL**2/(1+z))
+        print(dL)
+    dL = dL.to('cm')
+
+    #fNuNew = (spect.spec*u.Unit('m')**2)/(4*np.pi*dL**2/(1+z))
+    uFnuN = u.Unit('erg')/u.Unit('s')/u.Unit('Hz')/u.Unit('cm')**2
+
+    fNuNew = (spect.spec*(4*np.pi*((10 * u.Unit('parsec')).to('cm'))**2)/(4*np.pi*dL**2/(1+z))).to(uFnuN)
+
     newWavelengths = deepcopy(spect.wavelengths * (1.+z))
     newParams = deepcopy(spect.params)
     newParams['z']=z

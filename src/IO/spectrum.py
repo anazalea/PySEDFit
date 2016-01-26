@@ -69,17 +69,19 @@ class Spectrum:
             
         # Define desired flux units from base units
         uFnu = u.Unit('erg')/u.Unit('s')/u.Unit('Hz') 
-        uFnuN = u.Unit('erg')/u.Unit('s')/u.Unit('Hz')/u.Unit('m')**2 # astropy equivalency only works when area uncluded
+        uFnuN = u.Unit('erg')/u.Unit('s')/u.Unit('Hz')/u.Unit('cm')**2 # astropy equivalency only works when area uncluded
         uFlam = u.Unit('erg')/u.Unit('s')/u.Unit('Angstrom')
-        uFlamN = u.Unit('erg')/u.Unit('s')/u.Unit('Angstrom')/u.Unit('m')**2
+        uFlamN = u.Unit('erg')/u.Unit('s')/u.Unit('Angstrom')/u.Unit('cm')**2
         
         # Need F_nu, but if there's no area, need to add because too lazy to add equivalency 
         if yUnit.is_equivalent(uFnu):
-            spec = spec * yUnit / u.Unit('m')**2
+            spec = spec * yUnit / (4*np.pi*((10 * u.Unit('parsec')).to('cm'))**2)
+            #spec = spec * yUnit / u.Unit('m')**2
         elif yUnit.is_equivalent(uFlam):
-            spec = spec * yUnit/ u.Unit('m')**2
+            spec = spec * yUnit/ (4*np.pi*((10 * u.Unit('parsec')).to('cm'))**2)
+            #spec = spec * yUnit/ u.Unit('m')**2
         else:
-            spec = spec * yUnit
+            spec = (spec * yUnit) . to(uFnuN)
         
         if not spec.unit.is_equivalent(uFlamN) and not spec.unit.is_equivalent(uFnuN):
             raise ValueError(spec.unit,' not recognized as a unit of spectral flux density.')
@@ -113,14 +115,24 @@ class Spectrum:
         # Integrate
         numerator = trapz(num(filt.wavelengths[0:-1].value),x=filt.wavelengths[0:-1].value)
         denominator = trapz(denom(filt.wavelengths[0:-1].value),x=filt.wavelengths[0:-1].value)
+       
         if returnMag:
-            ABmag = -2.5 * np.log10(numerator/denominator) - 48.60
+            try:
+                ABmag = -2.5 * np.log10(numerator/denominator) - 48.60
+            except:
+                global badFilt
+                badFilt = filt
+                
+                global badspec
+                badspec = self
+                
+                ABmag = -2.5 * np.log10(numerator/denominator) - 48.60
             if np.isnan(ABmag):
                 print(self.params)
             return(ABmag*u.Unit('mag'))
         else:
             return(u.Unit('erg') * u.Unit('s')**-1 * u.Unit('cm')**-2 * u.Unit('Hz')**-1\
-                *numerator[0]/denominator[0]) # erg s−1 cm−2 Hz−1
+                *numerator/denominator) # erg s−1 cm−2 Hz−1
 #------------------------------------------------------------------------------    
 class BBsed():
     '''

@@ -1,17 +1,17 @@
 
 # -------------------------- Models ----------------------------
-#blah 1
+fitting_method BruteColorSpace
+dchi2 0.2
+output_overwrite yes
 model_file /Users/anneya/PySEDFit/TestFiles/salp_tau1_m20.bbsed
 model_flux_columns 5 6 7 8 9 10 11 12 13 14 
-model_param 0 model %i
-model_param 1 log(age) %f
-model_param 2 log(mass) %f 
-model_param 3 log(sfr) %f
-model_param 4 e(b-v) %f
+model_param 0 model %i False
+model_param 1 log(age) %f False
+model_param 2 log(mass) %f  True
+model_param 3 log(sfr) %f False
+model_param 4 e(b-v) %f False
 data_file /Users/anneya/PySEDFit/TestFiles/elliptical.mockobs2.cat
 data_flux_columns 0 2 4 6 8 10 12 14 16 18
 data_error_columns 1 3 5 7 9 11 13 15 17 19
-data_param 20 ID %i
+data_param  20 ID %i
 output_file /Users/anneya/PySEDFit/TestFiles/output.txt
-errorbar_method None
-brute_space color

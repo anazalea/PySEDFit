@@ -1,0 +1,9 @@
+model_file /Users/anneya/gzhk/forPySEDfit/ssp_lr62_bc2003_z001.bbsed
+model_flux_columns 7 8 9 10 11 12 13 14 15
+nmodels 50000
+nbins 0
+data_plot_filename /Users/anneya/gzhk/forPySEDfit/dataspacecheck.png
+model_plot_filename /Users/anneya/gzhk/forPySEDfit/modelspacecheck.png
+filter_names u g r iold inew/y z j h ks
+data_file /Users/anneya/gzhk/forPySEDfit/d2muzz200.dat
+data_flux_columns 8 10 12 14 16 18 20 22 24

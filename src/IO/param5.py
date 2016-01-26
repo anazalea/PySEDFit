@@ -385,26 +385,23 @@ def formatConversion(x):
 
 #########################################################################
 
-fitsedParams = [Param("fitting_method", defaultValue="brute", 
-                      allowedValues=["brute", "tree"]),
+fitsedParams = [Param("fitting_method", defaultValue="BruteFluxSpace", 
+                      allowedValues=["brutedDaisychain","brutecolorspace",
+                      "brutefluxspace","brutefiterrorbars"]),
                 Param("model_flux_unit", defaultValue="mag",
                       allowedValues=["mag", "jansky"]),
                 Param("data_flux_unit", defaultValue="mag",
                       allowedValues=["mag", "jansky"]),
                 Param("model_param", isList=True, multipleKey=True,
-                      defaultValue=[0, "model_param", "%.4f", False],
-                      dataType=[int, str, formatConversion, bool],
-                      canBeNeg=False, maxSize=4),
+                      dataType=[int,str,formatConversion,bool],
+                      defaultValue=[0,'model_param','%.4f',0]),
                 Param("output_overwrite", defaultValue=False, dataType=bool),
-                Param("errorbar_method", defaultValue="montecarlo",
-                      allowedValues=["montecarlo", "dchisq", "none"]),
-                Param("errorbar_range", isList=True, dataType=float, 
-                      canBeNeg=False),
+                Param('dchi2',dataType=float),
                 Param("montecarlo_iters", defaultValue=300, dataType=int,
                       canBeNeg=False),
                 Param("data_param", isList=True, multipleKey=True,
-                      defaultValue=[0, "data_param", "%.4f"],
-                      dataType=[int, str, formatConversion],
+                      defaultValue=[ "data_param",0, "%.4f"],
+                      dataType=[ int, str, formatConversion],
                       canBeNeg=False, maxSize=3),
                 Param("mag_softening", defaultValue=0.03, dataType=float,
                       canBeNeg=False),
@@ -421,6 +418,8 @@ fitsedParams = [Param("fitting_method", defaultValue="brute",
                 Param("data_error_columns", mandatory=True, isList=True,
                       dataType=int, canBeNeg=False,
                       sameLengthKeys=["data_flux_columns"]),
+                Param("mcits",dataType=int,defaultValue=1),
+                Param("oldschoolmc",dataType=bool,defaultValue=False),
                 Param("restrict_model", isList=True, multipleKey=True,
                       defaultValue=[0, "range", 0., 1.], maxSize=4,
                       dataType=[int, str, float, float],
@@ -442,7 +441,7 @@ fitsedParams = [Param("fitting_method", defaultValue="brute",
                       sameLengthKeys=["data_flux_columns"]),
                 Param("yourname",defaultValue="playa")
                       ]
-
+#------------------------------------------------------------------------------ 
 makesedParams = [
                 Param("rffmt", mandatory=True,  
                       dataType=str, allowedValues=['galaxev']),
@@ -454,7 +453,7 @@ makesedParams = [
                 Param("redshifts", isList=True, dataType=[str,float,float,float],
                       allowedValues=[['range','values'],None,None,None],
                       ),
-                Param("igm_law", dataType=str, allowedValues=['madau']),
+                Param("igm_law", dataType=str, allowedValues=['madau','inoue']),
                 Param("igm_opacities",dataType=[str,float,float,float],isList=True,
                     allowedValues=[['range','values'],None,None,None]),
                 Param("dust_law",dataType=str, allowedValues=['calzetti2000',\
@@ -464,16 +463,46 @@ makesedParams = [
                 Param('returnmags',dataType=bool,defaultValue=False),
                 Param('output_file',dataType=str),
                 Param('cosmology',dataType=[str,float,float,float],allowedValues=\
-                    [['lcdm','wmap'],None,None,None],isList=True)
+                    [['lcdm','wmap'],None,None,None],isList=True),
+                Param('models',dataType=[str,int,int],\
+                      isList=True,allowedValues=[['all','range','values'],None,None])
         
                 ]
                 
+#------------------------------------------------------------------------------ 
                 
+spaceCheckParams = [
+                Param("model_file", mandatory=True, canHaveSpace=False),
+                Param("data_file", mandatory=True, canHaveSpace=False),
+                Param("filter_names",isList=True,dataType=str),
+                Param("model_flux_columns", mandatory=True, isList=True,
+                      dataType=int, canBeNeg=False, 
+                      sameLengthKeys=["data_flux_columns"]),
+                Param("data_flux_columns", mandatory=True, isList=True,
+                      dataType=int, canBeNeg=False, 
+                      sameLengthKeys=["model_flux_columns"]),
+                Param("model_flux_unit", defaultValue="mag",
+                      allowedValues=["mag", "jansky"]),
+                Param("data_flux_unit", defaultValue="mag",
+                      allowedValues=["mag", "jansky"]),
+                Param('nbins',mandatory=False,defaultValue=None,dataType=int),
+                Param('data_plot_filename',dataType=str,defaultValue=None),
+                Param('model_plot_filename',dataType=str,defaultValue=None),
+                Param('nmodels',dataType=int)
+                ]                
+                
+                
+#------------------------------------------------------------------------------               
 def SetMakeSedParams(pfile,args=None):
     params = SetParams(pfile, makesedParams, args)
     return(params)
     
 def SetFitSedParams(pfile,args=None):
     params = SetParams(pfile, fitsedParams, args)
+    print('...')
+    return(params)
+    
+def SetSpaceCheckParams(pfile,args=None):
+    params = SetParams(pfile, spaceCheckParams, args)
     return(params)
 

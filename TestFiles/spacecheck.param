@@ -1,0 +1,9 @@
+model_file /Users/anneya/PySEDFit/TestFiles/cmc_ugrizy.bbsed
+model_flux_columns 4 5 6 7 8 9  
+nmodels 50000
+nbins 0
+data_plot_filename /Users/anneya/PySEDFit/Testfiles/dataspacecheck.png
+model_plot_filename /Users/anneya/PySEDFit/Testfiles/modelspacecheck.png
+filter_names u g r i z y
+data_file /Users/anneya/PySEDFit/TestFiles/cmcgals_ugrizy_randomized.cat
+data_flux_columns 2 4 6 8 10 12

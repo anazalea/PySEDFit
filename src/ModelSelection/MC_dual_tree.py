@@ -31,6 +31,8 @@ from scipy.spatial.distance import seuclidean
 from sklearn.neighbors import NearestNeighbors as nn
 from sklearn.neighbors import BallTree
 from astroML.density_estimation import bayesian_blocks
+from astroML.plotting import hist as amlHist
+import matplotlib.pyplot as plt
 
 '''
 Dual Tree, MC
@@ -196,6 +198,34 @@ def DualTreePeakProbs(data,flagMultimodal=False,saveBBlocks=False):
         return([allPeakLocs,multimo,bBlocks])
     else:
         return(np.array(allPeakLocs))
+#------------------------------------------------------------------------------ 
+        
+def DualTreePeakProbsBins(data,binType='knuth'): 
+    '''
+    Creates a histogram of the set of values found for each parameter
+    for each object. The peak probability value is taken to be the centre of the block
+    with highest value.
+    Inputs:
+        DualTree Output array of size (#objects,mcIts,#params)
+    Output:
+        Peak probability parameter values for each object, a NumPy array of size(#objects,#parameters)
+    '''
+    allPeakLocs = [] #for all objects
+    for i in range(len(data)):
+        peakLocs = [] #for this object, each parameter
+        for j in range(len(data[0][0])):
+            histo = amlHist(data[i][:,j],bins=binType)
+            plt.clf()
+            try:
+                nMax = np.argmax(histo[0])
+            except:
+                print(i,j)
+                return(histo)
+            loc = (histo[1][nMax]+histo[1][nMax+1])/2.
+            peakLocs.append(loc)
+        allPeakLocs.append(peakLocs)
+
+    return(np.array(allPeakLocs))
 #------------------------------------------------------------------------------ 
 def DualTreePercentiles(data,percentiles=[25,50,75]):
     '''

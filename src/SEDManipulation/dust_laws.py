@@ -57,8 +57,11 @@ def dustReddenSpectrum(spec,dustlaw,ebv):
         raise ValueError('Values of E(B-V) must be between 0 and 1.')
     nDustLaw = dustLaws.index(dustlaw)
     specUnit = spec.spec.unit
-    reddenedSpec = dustLawFuncs[nDustLaw](spec.wavelengths.to('micron').value,spec.spec.value,ebv) * u.Unit(specUnit)
-    newSpec = spectrum.Spectrum(deepcopy(spec.wavelengths).value,reddenedSpec.value,spec.wavelengths.unit,u.Unit(specUnit),params=deepcopy(spec.params)) 
+    print(specUnit)
+    wavelengthUnit = spec.wavelengths.unit
+    reddenedSpec = dustLawFuncs[nDustLaw](1.0*spec.wavelengths.to('micron').value,spec.spec.value,ebv) * u.Unit(specUnit)
+    print(reddenedSpec)    
+    newSpec = spectrum.Spectrum(deepcopy(spec.wavelengths).value,reddenedSpec.value,wavelengthUnit,specUnit,params=deepcopy(spec.params)) 
     newSpec.params['ebv']=ebv
     return(newSpec)    
 #------------------------------------------------------------------------------ 
@@ -74,11 +77,12 @@ def Calzetti2000(lam,lnu,ebv):
     Output:
             NumPy array of dust attenuated lnus
     '''    
-    r = 4.
-    k = 2.659 * (-1.857 + 1.040/lnu) + r
-    k[lam<0.63] = 2.659 * (-2.156 + (1.509/lnu[lam<0.63]) - (0.198/lnu[lam<0.63]**2) +\
-                (0.011/lnu[lam<0.63]**3)) + r
+    r = 4.05
+    k = 2.659 * (-1.857 + 1.040/lam) + r
+    k[lam<0.63] = 2.659 * (-2.156 + (1.509/lam[lam<0.63]) - (0.198/lam[lam<0.63]**2) +\
+                (0.011/lam[lam<0.63]**3)) + r
     newLnu = lnu * 10 ** (-0.4 * ebv * k)
+
     return(newLnu)
     
 #------------------------------------------------------------------------------ 
